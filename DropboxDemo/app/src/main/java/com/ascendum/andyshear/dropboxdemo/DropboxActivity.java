@@ -2,6 +2,7 @@ package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,13 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     final static private String APP_KEY = "d3zx13rhlc2jbpr";
     final static private String APP_SECRET = "rfnin8j6dr3uhuv";
 
+
+    private static final String ACCOUNT_PREFS_NAME = "prefs";
+    private static final String ACCESS_KEY_NAME = "ACCESS_KEY";
+    private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
+
+    private String accessToken;
+
     public final static String DROPBOX_ITEMS = "com.ascendum.andyshear.dropboxdemo.ITEMS";
 
     // In the class declaration section:
@@ -41,26 +49,76 @@ public class DropboxActivity extends Activity implements AsyncResponse{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_folder_list);
 
-        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
-        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        AndroidAuthSession session = buildSession();
         mDBApi = new DropboxAPI<AndroidAuthSession>(session);
 
+        if (mDBApi.getSession().isLinked()) {
+            context = this;
 
-        mDBApi.getSession().startOAuth2Authentication(DropboxActivity.this);
+            DropboxLogin login = new DropboxLogin();
+            login.delegate = this;
+            login.execute();
+
+        } else {
+            mDBApi.getSession().startOAuth2Authentication(DropboxActivity.this);
+        }
+
 
         folderPath = "/";
+    }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString("accessToken", this.accessToken);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        this.accessToken = savedInstanceState.getString("accessToken");
+    }
+
+    private AndroidAuthSession buildSession() {
+        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+
+        SharedPreferences preferences = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
+        String key = preferences.getString(ACCESS_KEY_NAME, null);
+        String secret = preferences.getString(ACCESS_SECRET_NAME, null);
+
+        if (key == null || secret == null || key.length() == 0 || secret.length() == 0) {
+            return session;
+        }
+        if (key.equals("oauth2:")) {
+            session.setOAuth2AccessToken(secret);
+        }
+        return session;
     }
 
     protected void onResume() {
         super.onResume();
 
-        if (mDBApi.getSession().authenticationSuccessful()) {
+        if (mDBApi.getSession().isLinked()) {
+            context = this;
+
+            DropboxLogin login = new DropboxLogin();
+            login.delegate = this;
+            login.execute();
+
+        } else if (mDBApi.getSession().authenticationSuccessful()) {
             try {
                 // Required to complete auth, sets the access token on the session
                 mDBApi.getSession().finishAuthentication();
 
                 String accessToken = mDBApi.getSession().getOAuth2AccessToken();
+                this.accessToken = accessToken;
+
+                SharedPreferences prefs = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
+                SharedPreferences.Editor edit = prefs.edit();
+                edit.putString(ACCESS_KEY_NAME, "oauth2:");
+                edit.putString(ACCESS_SECRET_NAME, accessToken);
+                edit.commit();
 
                 context = this;
 
