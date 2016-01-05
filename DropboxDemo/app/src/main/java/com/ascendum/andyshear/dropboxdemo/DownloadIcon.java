@@ -13,6 +13,7 @@ import com.dropbox.client2.exception.DropboxException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by andyshear on 12/15/15.
@@ -62,8 +63,11 @@ public class DownloadIcon {
             try {
                 DropboxAPI.DropboxInputStream dis = mDBApi.getThumbnailStream(path, DropboxAPI.ThumbSize.ICON_256x256, DropboxAPI.ThumbFormat.JPEG);
                 image = BitmapFactory.decodeStream(dis);
+                dis.close();
 
             } catch (DropboxException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             return image;
@@ -72,13 +76,19 @@ public class DownloadIcon {
         @Override
         protected void onPostExecute(Bitmap result) {
             super.onPostExecute(result);
+            result = Bitmap.createScaledBitmap(result, result.getWidth(), result.getHeight(), false);
             FileOutputStream out;
             String filePath = Environment.getExternalStorageDirectory().toString();
             File file = new File(filePath, "test"+fileName+".jpeg");
             try {
                 out = new FileOutputStream(file);
-                result.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                result.compress(Bitmap.CompressFormat.JPEG, 75, out);
+
+                out.flush();
+                out.close();
             } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -108,12 +118,18 @@ public class DownloadIcon {
         protected void onPostExecute(Bitmap result) {
             super.onPostExecute(result);
             FileOutputStream out;
+            result = Bitmap.createScaledBitmap(result, 256, 256, false);
             String filePath = Environment.getExternalStorageDirectory().toString();
             File file = new File(filePath, "test"+path+".jpeg");
             try {
                 out = new FileOutputStream(file);
-                result.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                result.compress(Bitmap.CompressFormat.PNG, 75, out);
+
+                out.flush();
+                out.close();
             } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -147,7 +163,12 @@ public class DownloadIcon {
             try {
                 out = new FileOutputStream(file);
                 result.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+                out.flush();
+                out.close();
             } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 

@@ -2,6 +2,7 @@ package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,6 +30,9 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     private static final String ACCESS_KEY_NAME = "ACCESS_KEY";
     private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
 
+    private static final String FILE_PATH = "FILE_PATH";
+    private static final String DROPBOX_ITEM = "DROPBOX_ITEM";
+
     private String accessToken;
 
     public final static String DROPBOX_ITEMS = "com.ascendum.andyshear.dropboxdemo.ITEMS";
@@ -40,24 +44,36 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     public DropboxFolder folder;
     public ListView listView;
 
+    public DropboxAPI.Entry entry;
+
+    public DropboxItem dropboxItem;
+
     public String folderPath;
 
     public int count = 0;
+
+    public DropboxService dropboxService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_folder_list);
 
+        Intent intent = getIntent();
+
         AndroidAuthSession session = buildSession();
         mDBApi = new DropboxAPI<AndroidAuthSession>(session);
 
-        if (mDBApi.getSession().isLinked()) {
-            context = this;
+        String filePathIntent = intent.getStringExtra(FILE_PATH);
 
-            DropboxLogin login = new DropboxLogin();
-            login.delegate = this;
-            login.execute();
+        if (mDBApi.getSession().isLinked() && filePathIntent.equals("/")) {
+            context = this;
+            dropboxService = new DropboxService(mDBApi, this, "/");
+
+        } else if (mDBApi.getSession().isLinked() && filePathIntent.startsWith("/")) {
+            context = this;
+            dropboxService = new DropboxService(mDBApi, this, filePathIntent);
+            dropboxService.getPath(mDBApi, this, filePathIntent);
 
         } else {
             mDBApi.getSession().startOAuth2Authentication(DropboxActivity.this);
@@ -68,16 +84,23 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putString("accessToken", this.accessToken);
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // getIntent() should always return the most recent
+        setIntent(intent);
     }
 
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        this.accessToken = savedInstanceState.getString("accessToken");
-    }
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//        super.onSaveInstanceState(savedInstanceState);
+//        savedInstanceState.putString("accessToken", this.accessToken);
+//    }
+//
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        this.accessToken = savedInstanceState.getString("accessToken");
+//    }
 
     private AndroidAuthSession buildSession() {
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
@@ -99,14 +122,7 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     protected void onResume() {
         super.onResume();
 
-        if (mDBApi.getSession().isLinked()) {
-            context = this;
-
-            DropboxLogin login = new DropboxLogin();
-            login.delegate = this;
-            login.execute();
-
-        } else if (mDBApi.getSession().authenticationSuccessful()) {
+        if (mDBApi.getSession().authenticationSuccessful()) {
             try {
                 // Required to complete auth, sets the access token on the session
                 mDBApi.getSession().finishAuthentication();
@@ -136,8 +152,8 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     @Override
     public void processFinish(String method, String output) {
         count++;
-        if (count >= folder.folders.size()) {
-            FolderAdapter adapter = new FolderAdapter(this, folder);
+        if (count >= dropboxService.dropboxItem.entry.contents.size()) {
+            FolderAdapter adapter = new FolderAdapter(this, dropboxService.dropboxItem);
             listView = (ListView)findViewById(R.id.list);
             listView.setAdapter(adapter);
 
@@ -145,10 +161,10 @@ public class DropboxActivity extends Activity implements AsyncResponse{
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    String selectedItem = folder.folders.get(position);
+//                    String selectedItem = dropboxService.dropboxItem.entry.contents.get(position).fileName();
 //                    Toast.makeText(getApplicationContext(), selectedItem, Toast.LENGTH_SHORT).show();
-                    String test = "/" + folder.folders.get(position);
-                    getFolder(test);
+                    String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
+                    getFolder(folderPath);
                 }
             });
         }
@@ -159,9 +175,30 @@ public class DropboxActivity extends Activity implements AsyncResponse{
 
     protected void getFolder(String folderPath){
         this.folderPath = folderPath;
-        DropboxNestedFolder login = new DropboxNestedFolder();
-        login.delegate = this;
-        login.execute();
+        Intent intent = new Intent(this, DropboxActivity.class);
+        intent.putExtra(FILE_PATH, folderPath);
+        startActivity(intent);
+    }
+
+    @Override
+    public void processFinish(DropboxItem folder) {
+        dropboxService.dropboxItem = folder;
+
+        for(int i = 0; i < dropboxService.dropboxItem.entry.contents.size(); i++){
+            String path = dropboxService.dropboxItem.entry.contents.get(i).path;
+            String fileName = dropboxService.dropboxItem.entry.contents.get(i).fileName();
+            String type = dropboxService.dropboxItem.entry.contents.get(i).mimeType;
+            DownloadIcon iconDownload = new DownloadIcon(context);
+            iconDownload.done = this;
+            if(type == null){
+                iconDownload.setFolder(path, mDBApi);
+            } else if(type.startsWith("application/")){
+                iconDownload.setDoc(path, mDBApi);
+            } else {
+                iconDownload.downloadThumb(path, fileName, mDBApi);
+            }
+        }
+        count = 0;
     }
 
     @Override
@@ -189,11 +226,36 @@ public class DropboxActivity extends Activity implements AsyncResponse{
 
     }
 
-    private class DropboxLogin extends AsyncTask<String, String, DropboxFolder> {
+    @Override
+    public void processFinish(DropboxAPI.Entry entry) {
+
+        this.entry = entry;
+
+        for(int i = 0; i < entry.contents.size(); i++){
+            String path = entry.contents.get(i).path;
+            String fileName = entry.contents.get(i).fileName();
+            String type = entry.contents.get(i).mimeType;
+            DownloadIcon iconDownload = new DownloadIcon(context);
+            iconDownload.done = this;
+            if(type == null){
+                iconDownload.setFolder(path, mDBApi);
+            } else if(type.startsWith("application/")){
+                iconDownload.setDoc(path, mDBApi);
+            } else {
+                iconDownload.downloadThumb(path, fileName, mDBApi);
+            }
+        }
+        count = 0;
+
+
+
+    }
+
+    private class DropboxLogin extends AsyncTask<String, String, DropboxAPI.Entry> {
         public AsyncResponse delegate = null;
         @Override
-        protected DropboxFolder doInBackground(String... params) {
-
+        protected DropboxAPI.Entry doInBackground(String... params) {
+            String test = params[0];
             DropboxAPI.Entry entry = null;
             DropboxFolder dropboxFolder = null;
             try {
@@ -204,12 +266,12 @@ public class DropboxActivity extends Activity implements AsyncResponse{
             } catch (DropboxException e) {
                 e.printStackTrace();
             }
-            return dropboxFolder;
+            return entry;
 
         }
 
-        protected void onPostExecute(DropboxFolder folder) {
-            delegate.processFinish(folder);
+        protected void onPostExecute(DropboxAPI.Entry entry) {
+            delegate.processFinish(entry);
         }
     }
 

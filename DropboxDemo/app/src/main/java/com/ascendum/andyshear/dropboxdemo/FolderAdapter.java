@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.dropbox.client2.DropboxAPI;
+
 import java.io.File;
 import java.util.List;
 
@@ -23,25 +25,26 @@ import java.util.List;
 public class FolderAdapter extends BaseAdapter {
 
     private final Activity context;
-    public FolderModel folderModel;
-    public DropboxFolder folderList;
     public Drawable folderDrawable;
+    public DropboxItem dropboxItem;
 
-    public FolderAdapter(Activity context, DropboxFolder folderList) {
+    public View v;
+
+    public FolderAdapter(Activity context, DropboxItem dropboxItem) {
 
         this.context = context;
-        this.folderList = folderList;
         folderDrawable = context.getResources().getDrawable(R.drawable.folder);
+        this.dropboxItem = dropboxItem;
     }
 
     @Override
     public int getCount() {
-        return folderList.folders.size();
+        return dropboxItem.entry.contents.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return folderList.folders.get(position);
+        return dropboxItem.entry.contents.get(position);
     }
 
     @Override
@@ -51,24 +54,38 @@ public class FolderAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        LayoutInflater inflater = context.getLayoutInflater();
-        View rowView = inflater.inflate(R.layout.activity_folder, null, true);
 
-        TextView textView = (TextView) rowView.findViewById(R.id.label);
-        ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
+        View v = view;
 
-        String folderPath = folderList.folders.get(position).substring(1);
-        String fileName = folderList.fileNames.get(position);
-        textView.setText(fileName);
+        ViewHolder holder;
+
+        if (view == null) {
+            LayoutInflater inflater = context.getLayoutInflater();
+            v = inflater.inflate(R.layout.activity_folder, null, true);
+            holder = new ViewHolder();
+            holder.textView = (TextView) v.findViewById(R.id.label);
+            holder.imageView = (ImageView) v.findViewById(R.id.icon);
+            v.setTag(holder);
+        } else {
+            holder = (ViewHolder) v.getTag();
+        }
+
+        String fileName = dropboxItem.entry.contents.get(position).fileName();
+        holder.textView.setText(fileName);
         String path = Environment.getExternalStorageDirectory().toString();
-//        File file = new File(path, folderList[position].fileName);
-        if (folderList.files.get(position) == null) {
-            imageView.setImageDrawable(folderDrawable);
+        if (dropboxItem.entry.contents.get(position) == null) {
+            holder.imageView.setImageDrawable(folderDrawable);
         } else {
             File file = new File(path, "test"+ fileName +".jpeg");
-            imageView.setImageURI(Uri.fromFile(file));
+            holder.imageView.setImageURI(Uri.fromFile(file));
         }
-        return rowView;
+
+        return v;
+    }
+
+    static class ViewHolder {
+        TextView textView;
+        ImageView imageView;
     }
 
 }

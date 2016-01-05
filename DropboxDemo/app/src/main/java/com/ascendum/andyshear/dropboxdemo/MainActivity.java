@@ -39,6 +39,8 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
+    private static final String FILE_PATH = "FILE_PATH";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +51,7 @@ public class MainActivity extends Activity {
 
     public void dropbox(View view) {
         Intent intent = new Intent(this, DropboxActivity.class);
+        intent.putExtra(FILE_PATH, "/");
         startActivity(intent);
     }
 
