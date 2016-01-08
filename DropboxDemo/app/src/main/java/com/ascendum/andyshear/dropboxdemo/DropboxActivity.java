@@ -31,25 +31,11 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
 
     private static final String FILE_PATH = "FILE_PATH";
-    private static final String DROPBOX_ITEM = "DROPBOX_ITEM";
 
-    private static final String ACCESS_TOKEN = "ACCESS_TOKEN";
-
-    private String accessToken;
-
-    public final static String DROPBOX_ITEMS = "com.ascendum.andyshear.dropboxdemo.ITEMS";
-
-    // In the class declaration section:
     protected DropboxAPI<AndroidAuthSession> mDBApi;
     public Context context;
 
-    public DropboxFolder folder;
     public ListView listView;
-
-    public DropboxAPI.Entry entry;
-
-    public DropboxItem dropboxItem;
-
     public String folderPath;
 
     public int count = 0;
@@ -62,7 +48,6 @@ public class DropboxActivity extends Activity implements AsyncResponse{
         setContentView(R.layout.view_loading);
 
         Intent intent = getIntent();
-        accessToken = intent.getStringExtra(ACCESS_TOKEN);
 
         if (mDBApi == null) {
             AndroidAuthSession session = buildSession();
@@ -79,7 +64,7 @@ public class DropboxActivity extends Activity implements AsyncResponse{
             context = this;
             dropboxService = new DropboxService(mDBApi, this, "/");
 
-        }else if (mDBApi.getSession().isLinked() && filePathIntent.startsWith("/")) {
+        } else if (mDBApi.getSession().isLinked() && filePathIntent.startsWith("/")) {
             context = this;
             dropboxService = new DropboxService(mDBApi, this, filePathIntent);
             dropboxService.getPath(mDBApi, this, filePathIntent);
@@ -91,25 +76,6 @@ public class DropboxActivity extends Activity implements AsyncResponse{
 
         folderPath = "/";
     }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        // getIntent() should always return the most recent
-        setIntent(intent);
-    }
-
-//    @Override
-//    public void onSaveInstanceState(Bundle savedInstanceState) {
-//        super.onSaveInstanceState(savedInstanceState);
-//        savedInstanceState.putString("accessToken", this.accessToken);
-//    }
-//
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        this.accessToken = savedInstanceState.getString("accessToken");
-//    }
 
     private AndroidAuthSession buildSession() {
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
@@ -148,38 +114,29 @@ public class DropboxActivity extends Activity implements AsyncResponse{
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    String selectedItem = dropboxService.dropboxItem.entry.contents.get(position).fileName();
-//                    Toast.makeText(getApplicationContext(), selectedItem, Toast.LENGTH_SHORT).show();
-                    String fileType = dropboxService.dropboxItem.entry.contents.get(position).mimeType;
-                    if (fileType == null) {
-                        String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
-                        getFolder(folderPath);
-                    } else if (fileType.startsWith("video")){
-                        String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
-                        getFile(filePath);
-                    } else if (fileType.startsWith("image")){
-                        String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
-                        getFile(filePath);
-                    }
-
+                String fileType = dropboxService.dropboxItem.entry.contents.get(position).mimeType;
+                if (fileType == null) {
+                    String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
+                    getFolder(folderPath);
+                } else if (fileType.startsWith("video")){
+                    String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
+                    getFile(filePath);
+                } else if (fileType.startsWith("image")){
+                    String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
+                    getFile(filePath);
+                }
                 }
             });
         }
-
-
-
     }
 
     protected void getFolder(String folderPath){
-        this.folderPath = folderPath;
-
         Intent intent = new Intent(this, DropboxActivity.class);
         intent.putExtra(FILE_PATH, folderPath);
         startActivity(intent);
     }
 
     protected void getFile(String filePath){
-
         Intent intent = new Intent(this, ViewItemActivity.class);
         intent.putExtra(FILE_PATH, filePath);
         startActivity(intent);
@@ -204,103 +161,5 @@ public class DropboxActivity extends Activity implements AsyncResponse{
             }
         }
         count = 0;
-    }
-
-    @Override
-    public void processFinish(DropboxFolder folder) {
-
-        this.folder = folder;
-
-        for(int i = 0; i < folder.folders.size(); i++){
-            String path = folder.folders.get(i);
-            String fileName = folder.fileNames.get(i);
-            String type = folder.files.get(i);
-            DownloadIcon iconDownload = new DownloadIcon(context);
-            iconDownload.done = this;
-            if(type == null){
-                iconDownload.setFolder(path, mDBApi);
-            } else if(type.startsWith("application/")){
-                iconDownload.setDoc(path, mDBApi);
-            } else {
-                iconDownload.downloadThumb(path, fileName, mDBApi);
-            }
-        }
-        count = 0;
-
-
-
-    }
-
-    @Override
-    public void processFinish(DropboxAPI.Entry entry) {
-
-        this.entry = entry;
-
-        for(int i = 0; i < entry.contents.size(); i++){
-            String path = entry.contents.get(i).path;
-            String fileName = entry.contents.get(i).fileName();
-            String type = entry.contents.get(i).mimeType;
-            DownloadIcon iconDownload = new DownloadIcon(context);
-            iconDownload.done = this;
-            if(type == null){
-                iconDownload.setFolder(path, mDBApi);
-            } else if(type.startsWith("application/")){
-                iconDownload.setDoc(path, mDBApi);
-            } else {
-                iconDownload.downloadThumb(path, fileName, mDBApi);
-            }
-        }
-        count = 0;
-
-
-
-    }
-
-    private class DropboxLogin extends AsyncTask<String, String, DropboxAPI.Entry> {
-        public AsyncResponse delegate = null;
-        @Override
-        protected DropboxAPI.Entry doInBackground(String... params) {
-            String test = params[0];
-            DropboxAPI.Entry entry = null;
-            DropboxFolder dropboxFolder = null;
-            try {
-                entry = mDBApi.metadata("/", 10, null, true, null);
-                dropboxFolder = new DropboxFolder(entry, context, mDBApi);
-
-
-            } catch (DropboxException e) {
-                e.printStackTrace();
-            }
-            return entry;
-
-        }
-
-        protected void onPostExecute(DropboxAPI.Entry entry) {
-            delegate.processFinish(entry);
-        }
-    }
-
-    private class DropboxNestedFolder extends AsyncTask<String, String, DropboxFolder> {
-        public AsyncResponse delegate = null;
-        @Override
-        protected DropboxFolder doInBackground(String... params) {
-
-            DropboxAPI.Entry entry = null;
-            DropboxFolder dropboxFolder = null;
-            try {
-                entry = mDBApi.metadata(folderPath, 10, null, true, null);
-                dropboxFolder = new DropboxFolder(entry, context, mDBApi);
-
-
-            } catch (DropboxException e) {
-                e.printStackTrace();
-            }
-            return dropboxFolder;
-
-        }
-
-        protected void onPostExecute(DropboxFolder folder) {
-            delegate.processFinish(folder);
-        }
     }
 }

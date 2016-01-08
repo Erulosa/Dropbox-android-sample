@@ -9,7 +9,5 @@ import com.dropbox.client2.DropboxAPI;
  */
 public interface AsyncResponse {
     void processFinish(String method, String output);
-    void processFinish(DropboxFolder folder);
-    void processFinish(DropboxAPI.Entry entry);
     void processFinish(DropboxItem dropboxItem);
 }
