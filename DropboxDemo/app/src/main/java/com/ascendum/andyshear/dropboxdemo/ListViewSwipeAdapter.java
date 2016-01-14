@@ -36,7 +36,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
 
     @Override
     public View generateView(int i, ViewGroup viewGroup) {
-
+        final int position = i;
         View v = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
         SwipeLayout swipeLayout = (SwipeLayout)v.findViewById(getSwipeLayoutResourceId(i));
         swipeLayout.addSwipeListener(new SimpleSwipeListener() {
@@ -56,6 +56,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
         v.findViewById(R.id.lock).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                dropboxItem.entry.contents.get(position).readOnly = true;
                 Toast.makeText(context, "lock", Toast.LENGTH_SHORT).show();
             }
         });

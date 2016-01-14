@@ -71,7 +71,9 @@ public class MainActivity extends Activity {
     }
 
     public void recordKnurldTest(View view) {
-        Intent intent = new Intent(this, RecordWAVActivity.class);
+//        KnurldService kService = new KnurldService();
+//        String test = kService.getToken();
+        Intent intent = new Intent(this, KnurldActivity.class);
         startActivity(intent);
     }
 

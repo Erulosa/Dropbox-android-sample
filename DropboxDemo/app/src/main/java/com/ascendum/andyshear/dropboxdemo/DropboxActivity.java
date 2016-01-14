@@ -17,10 +17,13 @@ import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by andyshear on 12/21/15.
  */
-public class DropboxActivity extends Activity implements AsyncResponse{
+public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnurldResponse {
 
     final static private String APP_KEY = "d3zx13rhlc2jbpr";
     final static private String APP_SECRET = "rfnin8j6dr3uhuv";
@@ -42,10 +45,14 @@ public class DropboxActivity extends Activity implements AsyncResponse{
 
     public DropboxService dropboxService;
 
+    public KnurldService knurldService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.view_loading);
+
+        knurldService = new KnurldService(this);
 
         Intent intent = getIntent();
 
@@ -60,15 +67,16 @@ public class DropboxActivity extends Activity implements AsyncResponse{
             context = this;
             dropboxService = new DropboxService(mDBApi, this, "/");
 
-        } else if (mDBApi.getSession().isLinked() && filePathIntent.equals("/")) {
-            context = this;
-            dropboxService = new DropboxService(mDBApi, this, "/");
+        } else if (mDBApi.getSession().isLinked() && filePathIntent != null) {
+            if (mDBApi.getSession().isLinked() && filePathIntent.equals("/")) {
+                context = this;
+                dropboxService = new DropboxService(mDBApi, this, "/");
 
-        } else if (mDBApi.getSession().isLinked() && filePathIntent.startsWith("/")) {
-            context = this;
-            dropboxService = new DropboxService(mDBApi, this, filePathIntent);
-            dropboxService.getPath(mDBApi, this, filePathIntent);
-
+            } else if (mDBApi.getSession().isLinked() && filePathIntent.startsWith("/")) {
+                context = this;
+                dropboxService = new DropboxService(mDBApi, this, filePathIntent);
+                dropboxService.getPath(mDBApi, this, filePathIntent);
+            }
         } else {
             mDBApi.getSession().startOAuth2Authentication(DropboxActivity.this);
         }
@@ -100,6 +108,18 @@ public class DropboxActivity extends Activity implements AsyncResponse{
     }
 
     @Override
+    public void processFinish(String call, String method, String result) {
+        JSONObject jsonParam = null;
+        try {
+            jsonParam = new JSONObject(result);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        String test = "";
+
+    }
+
+    @Override
     public void processFinish(String method, String output) {
         count++;
         if (count >= dropboxService.dropboxItem.entry.contents.size()) {
@@ -115,6 +135,7 @@ public class DropboxActivity extends Activity implements AsyncResponse{
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String fileType = dropboxService.dropboxItem.entry.contents.get(position).mimeType;
+                boolean test = dropboxService.dropboxItem.entry.contents.get(position).readOnly;
                 if (fileType == null) {
                     String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
                     getFolder(folderPath);

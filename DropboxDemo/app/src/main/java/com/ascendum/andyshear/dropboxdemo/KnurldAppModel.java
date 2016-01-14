@@ -17,11 +17,12 @@ public class KnurldAppModel {
     private int authThresholdMaxRise;
     private boolean useModelUpdate;
     private int modelUpdateDailyLimit;
+    private String href;
 
     public KnurldAppModel(String developerId, String authorization, int enrollmentRepeats,
                           ArrayList<String> vocabulary, int verificationLength, float threshold,
                           boolean autoThresholdEnable, int autoThresholdClearance, int authThresholdMaxRise,
-                          boolean useModelUpdate, int modelUpdateDailyLimit) {
+                          boolean useModelUpdate, int modelUpdateDailyLimit, String href) {
         this.developerId = developerId;
         this.authorization = authorization;
         this.enrollmentRepeats = enrollmentRepeats;
@@ -33,5 +34,14 @@ public class KnurldAppModel {
         this.authThresholdMaxRise = authThresholdMaxRise;
         this.useModelUpdate = useModelUpdate;
         this.modelUpdateDailyLimit = modelUpdateDailyLimit;
+        this.href = href;
+    }
+
+    public String getHref() {
+        return href;
+    }
+
+    public void setHref(String href) {
+        this.href = href;
     }
 }

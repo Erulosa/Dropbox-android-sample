@@ -10,12 +10,22 @@ public class KnurldConsumerModel {
     private String gender;
     private String username;
     private String password;
+    private String href;
 
-    public KnurldConsumerModel(String developerId, String authorization, String gender, String username, String password) {
+    public KnurldConsumerModel(String developerId, String authorization, String gender, String username, String password, String href) {
         this.developerId = developerId;
         this.authorization = authorization;
         this.gender = gender;
         this.username = username;
         this.password = password;
+        this.href = href;
+    }
+
+    public String getHref() {
+        return href;
+    }
+
+    public void setHref(String href) {
+        this.href = href;
     }
 }

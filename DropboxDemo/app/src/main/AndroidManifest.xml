@@ -39,6 +39,7 @@
         <activity android:name=".ViewItemActivity"></activity>
         <activity android:name=".AudioRecordTest"></activity>
         <activity android:name=".RecordWAVActivity"></activity>
+        <activity android:name=".KnurldActivity"></activity>
     </application>
 
 </manifest>
