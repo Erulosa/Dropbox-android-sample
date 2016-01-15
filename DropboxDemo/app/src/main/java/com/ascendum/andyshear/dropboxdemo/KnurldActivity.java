@@ -17,10 +17,13 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
     public KnurldAppModel knurldAppModel;
     public KnurldConsumerModel knurldConsumerModel;
 
+    public String taskName;
+    public JSONObject intervals;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.knurld_setup);
+        setContentView(R.layout.view_loading);
 
         knurldService = new KnurldService(this);
         knurldService.getToken();
@@ -32,6 +35,14 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
 
     public void setKnurldConsumer(View view) {
         setKnurldConsumer("", null);
+    }
+
+    public void setKnurldEndpointAnalysis(View view) {
+        setKnurldEndpointAnalysis("enrollment.wav");
+    }
+
+    public void getKnurldEndpointAnalysis(View view) {
+        getKnurldEndpointAnalysis("824633e9cbe60a014101e04e5f2124bf");
     }
 
     public void setKnurldAppModel(String appModel){
@@ -108,16 +119,29 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
     }
 
     public void setKnurldEndpointAnalysis(String filename){
-        String testEndpoint = "{\"filedata\":\"" + filename + "\",\"words\":\"4\"}";
+        String testEndpoint = "{\"filedata\":\"" + filename + "\",\"words\":\"3\"}";
         knurldService.createEndpointAnalysis(testEndpoint);
 
+    }
+
+    public void getKnurldEndpointAnalysis(String task){
+        knurldService.showEndpointAnalysis(taskName);
     }
 
     @Override
     public void processFinish(String call, String method, String result) {
         JSONObject jsonParam = null;
+        if (method.equals("accessToken")) {
+            setContentView(R.layout.knurld_setup);
+        }
+
         try {
             jsonParam = new JSONObject(result);
+            if (method.equals("createEndpointAnalysis")) {
+                taskName = jsonParam.getString("taskName");
+            } else if (method.equals("createEndpointAnalysis")) {
+                intervals = jsonParam.getJSONObject("intervals");
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

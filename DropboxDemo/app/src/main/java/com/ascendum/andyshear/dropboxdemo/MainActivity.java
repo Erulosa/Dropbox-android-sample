@@ -77,6 +77,11 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public void recordTest(View view) {
+        Intent intent = new Intent(this, RecordWAVActivity.class);
+        startActivity(intent);
+    }
+
 //    public void Knurld
 
     private AndroidAuthSession buildSession() {

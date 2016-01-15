@@ -157,7 +157,7 @@ public class RecordWAVActivity extends Activity{
             recordingThread = null;
         }
 
-        copyWaveFile(getTempFilename(),getFilename("test"));
+        copyWaveFile(getTempFilename(),getFilename("enrollment"));
         deleteTempFile();
     }
 

@@ -28,4 +28,15 @@
         android:layout_below="@+id/button"
         android:layout_alignLeft="@+id/button"
         android:layout_alignStart="@+id/button" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record"
+        android:id="@+id/record"
+        android:layout_marginTop="27dp"
+        android:layout_below="@+id/knurldButton"
+        android:layout_alignLeft="@+id/knurldButton"
+        android:layout_alignStart="@+id/knurldButton"
+        android:onClick="recordTest" />
 </RelativeLayout>
