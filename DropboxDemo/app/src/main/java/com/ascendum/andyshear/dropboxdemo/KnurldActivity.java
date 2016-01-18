@@ -100,8 +100,17 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
             knurldService.createEnrollment(testEnrollment);
         } else if (knurldEnrollmentsModel.enrollmentId != null){
             JSONObject enrollmentBody = new JSONObject();
+            JSONArray phrases = knurldAnalysisModel.intervals;
+            for (int i = 0; i<phrases.length(); i++) {
+                try {
+                    JSONObject j = phrases.getJSONObject(i);
+                    j.put("phrase", "Boston");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
-                enrollmentBody.put("intervals", knurldAnalysisModel.intervals);
+                enrollmentBody.put("intervals", phrases);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
