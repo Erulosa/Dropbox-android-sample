@@ -8,10 +8,10 @@
         android:layout_height="wrap_content"
         android:text="App-Model"
         android:id="@+id/createAppModel"
+        android:layout_marginTop="33dp"
+        android:onClick="setKnurldAppModel"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="86dp"
-        android:onClick="setKnurldAppModel" />
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -29,19 +29,54 @@
         android:layout_height="wrap_content"
         android:text="Endpoint"
         android:id="@+id/endpoint"
-        android:layout_below="@+id/createConsumer"
+        android:onClick="setKnurldEndpointAnalysis"
+        android:layout_below="@+id/getConsumer"
         android:layout_alignRight="@+id/createConsumer"
-        android:layout_alignEnd="@+id/createConsumer"
-        android:layout_marginTop="64dp"
-        android:onClick="setKnurldEndpointAnalysis" />
+        android:layout_alignEnd="@+id/createConsumer" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="getTask"
         android:id="@+id/getTask"
+        android:onClick="getKnurldEndpointAnalysis"
         android:layout_below="@+id/endpoint"
+        android:layout_alignLeft="@+id/endpoint"
+        android:layout_alignStart="@+id/endpoint" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="getAppModel"
+        android:id="@+id/getAppModel"
+        android:layout_below="@+id/createAppModel"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="36dp"
-        android:onClick="getKnurldEndpointAnalysis" />
+        android:onClick="getKnurldAppModel" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="getConsumer"
+        android:id="@+id/getConsumer"
+        android:layout_below="@+id/createConsumer"
+        android:layout_centerHorizontal="true"
+        android:onClick="getKnurldConsumer" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="setEnrollment"
+        android:id="@+id/setEnrollment"
+        android:layout_below="@+id/getTask"
+        android:layout_centerHorizontal="true"
+        android:onClick="setKnurldEnrollment" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="getEnrollment"
+        android:id="@+id/getEnrollment"
+        android:layout_below="@+id/setEnrollment"
+        android:layout_centerHorizontal="true"
+        android:onClick="getKnurldEnrollment" />
 </RelativeLayout>

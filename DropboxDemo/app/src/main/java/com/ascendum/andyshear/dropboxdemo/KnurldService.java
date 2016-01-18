@@ -37,6 +37,9 @@ public class KnurldService {
     private static String CLIENT_TOKEN;
 
     private static final String LINE_FEED = "\r\n";
+    private static final String GET = "GET";
+    private static final String POST = "POST";
+    private static final String ACCESS_TOKEN = "ACCESS_TOKEN";
 
     AsyncKnurldResponse response;
 
@@ -48,143 +51,179 @@ public class KnurldService {
     public void getToken(){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("accessToken", null, null);
+        httpAsync.execute(ACCESS_TOKEN, "ACCESS_TOKEN", null, null);
     }
 
     public void indexAppModel(){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("indexAppModels", null, null);
+        httpAsync.execute(GET, "app-models", null, null);
     }
 
     public void showAppModel(String appModel){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("showAppModel", appModel, null);
+        httpAsync.execute(GET, "app-models", appModel, null);
     }
 
     public void createAppModel(String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("createAppModel", null, body);
+        httpAsync.execute(POST, "app-models", null, body);
+    }
+
+    public void updateAppModel(String appModel, String body){
+        HttpAsyncTask httpAsync = new HttpAsyncTask();
+        httpAsync.delegate = response;
+        httpAsync.execute(POST, "app-models", appModel, body);
     }
 
     public void indexConsumer(){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("indexConsumers", null, null);
+        httpAsync.execute(GET, "consumers", null, null);
     }
 
     public void showConsumer(String consumer){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("showConsumer", consumer, null);
+        httpAsync.execute(GET, "consumers", consumer, null);
     }
 
     public void createConsumer(String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("createConsumer", null, body);
+        httpAsync.execute(POST, "consumers", null, body);
     }
 
     public void updateConsumer(String consumer, String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("updateConsumer", consumer, body);
-    }
-
-    public void deleteConsumer(String consumer){
-        HttpAsyncTask httpAsync = new HttpAsyncTask();
-        httpAsync.delegate = response;
-        httpAsync.execute("deleteConsumer", consumer, null);
+        httpAsync.execute(POST, "consumers", consumer, body);
     }
 
     public void indexEnrollment(){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("indexEnrollments", null, null);
+        httpAsync.execute(GET, "enrollments", null, null);
     }
 
     public void showEnrollment(String enrollment){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("showEnrollment", enrollment, null);
+        httpAsync.execute(GET, "enrollments", enrollment, null);
     }
 
     public void createEnrollment(String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("createEnrollment", null, body);
+        httpAsync.execute(POST, "enrollments", null, body);
     }
 
     public void updateEnrollment(String enrollment, String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("updateEnrollment", enrollment, body);
-    }
-
-    public void deleteEnrollment(String enrollment){
-        HttpAsyncTask httpAsync = new HttpAsyncTask();
-        httpAsync.delegate = response;
-        httpAsync.execute("deleteEnrollment", enrollment, null);
+        httpAsync.execute(POST, "enrollments", enrollment, body);
     }
 
     public void indexVerification(){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("indexVerifications", null, null);
+        httpAsync.execute(GET, "verifications", null, null);
     }
 
     public void showVerification(String verification){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("showVerification", verification, null);
+        httpAsync.execute(GET, "verifications", verification, null);
     }
 
     public void createVerification(String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("createVerification", null, body);
+        httpAsync.execute(POST, "verification", null, body);
     }
 
     public void updateVerification(String verification, String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("updateVerification", verification, body);
+        httpAsync.execute(POST, "verification", verification, body);
     }
-
-    public void deleteVerification(String verification){
-        HttpAsyncTask httpAsync = new HttpAsyncTask();
-        httpAsync.delegate = response;
-        httpAsync.execute("deleteVerification", verification, null);
-    }
-
 
     public void showEndpointAnalysis(String endpointAnalysis){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("showEndpointAnalysis", endpointAnalysis, null);
+        httpAsync.execute(GET, "endpointAnalysis", endpointAnalysis, null);
     }
 
     public void createEndpointAnalysis(String body){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
-        httpAsync.execute("createEndpointAnalysis", null, body);
+        httpAsync.execute(POST, "endpointAnalysis", null, body);
+    }
+
+
+
+
+
+
+
+
+    public static String[] AccessToken(String... params) {
+        StringBuilder sb = new StringBuilder();
+        InputStream in = null;
+        String urlString = "https://api.knurld.io/oauth/client_credential/accesstoken?grant_type=client_credentials";
+        String credentials = "client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET;
+
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setDoOutput(true);
+            urlConnection.setDoInput(true);
+            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setRequestMethod("POST");
+            urlConnection.connect();
+
+            OutputStreamWriter out = new OutputStreamWriter(urlConnection.getOutputStream());
+            out.write(credentials);
+            out.flush();
+            out.close();
+
+            int HttpResult = urlConnection.getResponseCode();
+            if (HttpResult == HttpURLConnection.HTTP_OK){
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getInputStream(),"utf-8"));
+                String line = null;
+                while ((line = br.readLine()) != null) {
+
+                    sb.append(line);
+                }
+                JSONObject jsonResponse = new JSONObject(sb.toString());
+                CLIENT_TOKEN = jsonResponse.getString("access_token");
+                br.close();
+
+                System.out.println("" + sb.toString());
+                System.out.println("TOKEN " + CLIENT_TOKEN);
+            } else{
+                System.out.println(urlConnection.getResponseMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new String[]{"error", e.getMessage()};
+        }
+
+        return new String[]{"accessToken", CLIENT_TOKEN};
     }
 
     public static String[] GET(String... params) {
         StringBuilder sb = new StringBuilder();
         InputStream in = null;
         String method = params[0];
-        String urlStringParams = (params[1] == null) ? "" : params[1];
+        String urlStringParams = (params[1] == null) ? "" : "/" + params[1];
         String[] result = {"", ""};
-        String path = "";
 
-        if (method.contains("EndpointAnalysis")) {
-            path = "endpointAnalysis/";
-        }
-
-        String urlString = "https://api.knurld.io/v1/" + path + urlStringParams;
+        String urlString = "https://api.knurld.io/v1/" + method + urlStringParams;
 
         try {
             URL url = new URL(urlString);
@@ -223,104 +262,17 @@ public class KnurldService {
         return result;
     }
 
-    public static String[] AccessToken(String... params) {
-        StringBuilder sb = new StringBuilder();
-        InputStream in = null;
-        String urlString = "https://api.knurld.io/oauth/client_credential/accesstoken?grant_type=client_credentials";
-        String result = "";
-        String credentials = "client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET;
-
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setDoOutput(true);
-            urlConnection.setDoInput(true);
-            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            urlConnection.setRequestMethod("POST");
-            urlConnection.connect();
-
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("grant_type", "client_credentials");
-
-            OutputStreamWriter out = new OutputStreamWriter(urlConnection.getOutputStream());
-            String body = "grant_type=client_credentials";
-            out.write(credentials);
-            out.flush();
-            out.close();
-
-            int HttpResult = urlConnection.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK){
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream(),"utf-8"));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-
-                    sb.append(line);
-                }
-                String test = sb.toString();
-                JSONObject jsonResponse = new JSONObject(sb.toString());
-                CLIENT_TOKEN = jsonResponse.getString("access_token");
-                br.close();
-
-                System.out.println("" + sb.toString());
-                System.out.println("TOKEN " + CLIENT_TOKEN);
-            } else{
-                System.out.println(urlConnection.getResponseMessage());
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new String[]{"error", e.getMessage()};
-        }
-
-        return new String[]{"accessToken", CLIENT_TOKEN};
-    }
-
     public static String[] POST(String... params) {
         StringBuilder sb = new StringBuilder();
-        StringBuilder dataBuilder = new StringBuilder();
-        InputStream in = null;
 
         String method = params[0];
-        String urlStringParams = (params[1] == null) ? "" : params[1];
+        String urlStringParams = (params[1] == null) ? "" : "/" + params[1];
         String body = params[2];
         File file;
-        String path = "";
-        if (method.contains("AppModel")) {
-            path = "app-models";
-        } else if (method.contains("Consumer")) {
-            path = "consumers";
-        } else if (method.contains("Enrollment")) {
-            path = "enrollments";
-        } else if (method.contains("Verification")) {
-            path = "verifications";
-        } else if (method.contains("EndpointAnalysis")) {
-            path = "endpointAnalysis/file";
-
-
-//            String filePath = Environment.getExternalStorageDirectory().getPath();
-//            try {
-//                JSONObject jsonBody = new JSONObject(body);
-//                String fileName = jsonBody.getString("filedata");
-//                file = new File(filePath, fileName);
-//                DataInputStream dis = new DataInputStream(new FileInputStream(file));
-//                while (dis.available()>0) {
-//                    dataBuilder.append(dis.read());
-//                }
-//                String fileData = dataBuilder.toString();
-//                jsonBody.put("filedata", fileData);
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
-
+        if (method.contains("endpointAnalysis")) {
+            method = "endpointAnalysis/file";
         }
-        String urlString = "https://api.knurld.io/v1/" + path + urlStringParams;
+        String urlString = "https://api.knurld.io/v1/" + method + urlStringParams;
         String[] result = {"", ""};
 
         try {
@@ -329,7 +281,7 @@ public class KnurldService {
             urlConnection.setDoOutput(true);
             urlConnection.setDoInput(true);
 
-            if (method.contains("EndpointAnalysis")) {
+            if (method.contains("endpointAnalysis")) {
                 String boundary = "===" + System.currentTimeMillis() + "===";
 
                 urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
@@ -346,7 +298,6 @@ public class KnurldService {
                 String fileName = jsonBody.getString("filedata");
                 file = new File(filePath, fileName);
 
-//                PrintWriter writer = new PrintWriter(out, true);
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
                 String name = "filedata";
                 String filename = "enrollments.wav";
@@ -380,6 +331,61 @@ public class KnurldService {
                 writer.append("--" + boundary + "--").append(LINE_FEED);
                 writer.close();
 
+            } else if (method.contains("enrollment") && urlStringParams != "") {
+                String boundary = "Nonce";
+
+                urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
+                urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.connect();
+
+//                String fPath = Environment.getExternalStorageDirectory().getPath();
+//                File file1 = new File(fPath, "test.txt");
+//                OutputStream outputStream = new FileOutputStream(file1);
+
+                OutputStream outputStream = urlConnection.getOutputStream();
+
+                String filePath = Environment.getExternalStorageDirectory().getPath();
+                filePath = filePath + "/AudioRecorder/";
+                JSONObject jsonBody = new JSONObject(body);
+                String filename = "enrollment.wav";
+                file = new File(filePath, filename);
+
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
+
+                writer.append("--" + boundary).append(LINE_FEED);
+                writer.append("Content-Disposition: form-data; name=\"content\"").append(LINE_FEED);
+//                writer.append("Content-Type: application/json").append(LINE_FEED);
+                writer.append(LINE_FEED);
+                writer.append(body).append(LINE_FEED);
+                writer.flush();
+
+
+                String name = "enrollment.wav";
+                writer.append("--" + boundary).append(LINE_FEED);
+                writer.append("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"").append(LINE_FEED);
+                writer.append("Content-Type: audio/wav").append(LINE_FEED);
+//                writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
+                writer.append(LINE_FEED);
+                writer.flush();
+
+                FileInputStream fin = new FileInputStream(file);
+                byte[] buffer = new byte[4096];
+                int bytesRead = -1;
+                while ((bytesRead = fin.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                outputStream.flush();
+                fin.close();
+
+                writer.append(LINE_FEED);
+                writer.flush();
+
+                writer.append(LINE_FEED).flush();
+                writer.append("--" + boundary + "--").append(LINE_FEED);
+                writer.close();
+
             } else {
                 urlConnection.setRequestProperty("Content-Type", "application/json");
                 urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
@@ -396,6 +402,7 @@ public class KnurldService {
 
 
             int HttpResult = urlConnection.getResponseCode();
+
             if (HttpResult == HttpURLConnection.HTTP_OK || HttpResult == HttpURLConnection.HTTP_CREATED){
                 BufferedReader br = new BufferedReader(new InputStreamReader(
                         urlConnection.getInputStream(),"utf-8"));
@@ -428,55 +435,17 @@ public class KnurldService {
         public AsyncKnurldResponse delegate = null;
         @Override
         protected String[] doInBackground(String... params) {
-            String method = params[0];
-            String param = (params[1] == null) ? null : params[1];
-            String body = (params[2] == null) ? null : params[2];
-            switch (method) {
-                case "accessToken":
+            String type = params[0];
+            String method = params[1];
+            String param = (params[2] == null) ? null : params[2];
+            String body = (params[3] == null) ? null : params[3];
+
+            switch (type) {
+                case "ACCESS_TOKEN":
                     return AccessToken();
-                case "createAppModel":
+                case "POST":
                     return POST(method, param, body);
-                case "indexAppModels":
-                    return GET(method);
-                case "showAppModel":
-                    return GET(method, param);
-                case "updateAppModel":
-                    return POST(method, param, body);
-                case "deleteAppModel":
-                    return POST(method, param, body);
-                case "createConsumer":
-                    return POST(method, param, body);
-                case "indexConsumers":
-                    return GET(method);
-                case "showConsumer":
-                    return GET(method, param);
-                case "updateConsumer":
-                    return POST(method, param, body);
-                case "deleteConsumer":
-                    return POST(method, param, body);
-                case "createEnrollment":
-                    return POST(method, param, body);
-                case "indexEnrollments":
-                    return GET(method);
-                case "showEnrollment":
-                    return GET(method, param);
-                case "updateEnrollment":
-                    return POST(method, param, body);
-                case "deleteEnrollment":
-                    return POST(method, param, body);
-                case "createVerification":
-                    return POST(method, param, body);
-                case "indexVerifications":
-                    return GET(method);
-                case "showVerification":
-                    return GET(method, param);
-                case "updateVerification":
-                    return POST(method, param, body);
-                case "deleteVerification":
-                    return POST(method, param, body);
-                case "createEndpointAnalysis":
-                    return POST(method, param, body);
-                case "showEndpointAnalysis":
+                case "GET":
                     return GET(method, param);
                 default:
                     return null;
