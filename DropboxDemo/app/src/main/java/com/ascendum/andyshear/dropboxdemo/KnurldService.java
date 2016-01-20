@@ -48,6 +48,15 @@ public class KnurldService {
         this.response = response;
     }
 
+    public KnurldService(AsyncKnurldResponse response, String token) {
+        this.response = response;
+        CLIENT_TOKEN = token;
+    }
+
+    public String getAccessToken(){
+        return CLIENT_TOKEN;
+    }
+
     public void getToken(){
         HttpAsyncTask httpAsync = new HttpAsyncTask();
         httpAsync.delegate = response;
@@ -209,7 +218,7 @@ public class KnurldService {
             }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Log.d("Error", e.getMessage());
             return new String[]{"error", e.getMessage()};
         }
 
@@ -250,7 +259,7 @@ public class KnurldService {
             }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Log.d("Error", e.getMessage());
             result[0] = method;
             result[1] = e.getMessage();
             return result;
@@ -412,13 +421,13 @@ public class KnurldService {
                 }
                 br.close();
 
-                System.out.println(""+sb.toString());
+                Log.d("ResponseMessage",  sb.toString());
             } else{
-                System.out.println(urlConnection.getResponseMessage());
+                Log.d("ResponseMessage", urlConnection.getResponseMessage());
             }
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            Log.d("Error", e.getMessage());
             result[0] = method;
             result[1] = e.getMessage();
             return result;

@@ -13,7 +13,7 @@ public class KnurldAppModel {
     private String developerId;
     private String authorization;
     private int enrollmentRepeats;
-    private ArrayList<String> vocabulary;
+    private JSONArray vocabulary;
     private int verificationLength;
     private float threshold;
     private boolean autoThresholdEnable;
@@ -30,10 +30,7 @@ public class KnurldAppModel {
 
     }
 
-    public KnurldAppModel(String developerId, String authorization, int enrollmentRepeats,
-                          ArrayList<String> vocabulary, int verificationLength, float threshold,
-                          boolean autoThresholdEnable, int autoThresholdClearance, int authThresholdMaxRise,
-                          boolean useModelUpdate, int modelUpdateDailyLimit, String href) {
+    public KnurldAppModel(String developerId, String authorization, int enrollmentRepeats, JSONArray vocabulary, int verificationLength, float threshold, boolean autoThresholdEnable, int autoThresholdClearance, int authThresholdMaxRise, boolean useModelUpdate, int modelUpdateDailyLimit, String href, String appModelId) {
         this.developerId = developerId;
         this.authorization = authorization;
         this.enrollmentRepeats = enrollmentRepeats;
@@ -46,6 +43,15 @@ public class KnurldAppModel {
         this.useModelUpdate = useModelUpdate;
         this.modelUpdateDailyLimit = modelUpdateDailyLimit;
         this.href = href;
+        this.appModelId = appModelId;
+    }
+
+    public JSONArray getVocabulary() {
+        return vocabulary;
+    }
+
+    public void setVocabulary(JSONArray vocabulary) {
+        this.vocabulary = vocabulary;
     }
 
     public String getHref() {
@@ -66,13 +72,21 @@ public class KnurldAppModel {
             if (items != null && items.length() > 0) {
                 JSONObject item = (JSONObject) items.get(0);
                 String h = item.has("href") ? item.getString("href") : null;
+                JSONArray vocab = item.has("vocabulary") ? item.getJSONArray("vocabulary") : null;
                 if (h != null) {
                     setHref(h);
                 }
+                if (vocab != null) {
+                    setVocabulary(vocab);
+                }
             } else {
                 String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
+                JSONArray vocab = jsonParam.has("vocabulary") ? jsonParam.getJSONArray("vocabulary") : null;
                 if (h != null) {
                     setHref(h);
+                }
+                if (vocab != null) {
+                    setVocabulary(vocab);
                 }
             }
 

@@ -101,10 +101,12 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
         } else if (knurldEnrollmentsModel.enrollmentId != null){
             JSONObject enrollmentBody = new JSONObject();
             JSONArray phrases = knurldAnalysisModel.intervals;
+            JSONArray vocab = knurldAppModel.getVocabulary();
             for (int i = 0; i<phrases.length(); i++) {
                 try {
                     JSONObject j = phrases.getJSONObject(i);
-                    j.put("phrase", "Boston");
+//                    j.put("phrase", "Boston");
+                    j.put("phrase", vocab.get(i));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

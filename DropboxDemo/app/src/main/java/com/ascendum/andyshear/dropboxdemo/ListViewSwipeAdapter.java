@@ -56,7 +56,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
         v.findViewById(R.id.lock).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dropboxItem.entry.contents.get(position).readOnly = true;
+                dropboxItem.entry.contents.get(position).readOnly = (dropboxItem.entry.contents.get(position).readOnly == true) ? false : true;
                 Toast.makeText(context, "lock", Toast.LENGTH_SHORT).show();
             }
         });
