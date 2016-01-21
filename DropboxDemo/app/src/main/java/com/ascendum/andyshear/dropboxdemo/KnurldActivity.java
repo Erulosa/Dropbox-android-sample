@@ -1,8 +1,12 @@
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +24,6 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
     public KnurldVerificationModel knurldVerificationModel;
     public KnurldAnalysisModel knurldAnalysisModel;
 
-    public KnurldModelService knurldModelService;
 
     public String taskName;
     public JSONObject intervals;
@@ -29,9 +32,16 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.view_loading);
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressSpinner);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.rgb(226, 132, 59), PorterDuff.Mode.MULTIPLY);
 
         knurldService = new KnurldService(this);
         knurldService.getToken();
+    }
+
+    public void recordEnrollment(View view) {
+        Intent intent = new Intent(this, RecordWAVActivity.class);
+        startActivity(intent);
     }
 
     public void setKnurldAppModel(View view) {

@@ -13,17 +13,6 @@ import java.util.ArrayList;
  * Created by andyshear on 12/30/15.
  */
 public class DropboxService{
-    final static private String APP_KEY = "d3zx13rhlc2jbpr";
-    final static private String APP_SECRET = "rfnin8j6dr3uhuv";
-
-
-    private static final String ACCOUNT_PREFS_NAME = "prefs";
-    private static final String ACCESS_KEY_NAME = "ACCESS_KEY";
-    private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
-
-    private String accessToken;
-
-    public final static String DROPBOX_ITEMS = "com.ascendum.andyshear.dropboxdemo.ITEMS";
 
     private DropboxAPI<AndroidAuthSession> mDBApi;
     public DropboxItem dropboxItem;

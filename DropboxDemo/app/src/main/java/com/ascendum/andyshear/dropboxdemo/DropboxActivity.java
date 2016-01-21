@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.dropbox.client2.DropboxAPI;
@@ -72,6 +75,8 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.view_loading);
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressSpinner);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.rgb(226, 132, 59), PorterDuff.Mode.MULTIPLY);
 
         Intent intent = getIntent();
 
@@ -173,7 +178,14 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         LockedItems.saveItems(this, "locked", lockedFiles);
     }
 
+    public void lockItem(String item) {
+
+        lockedFiles.add(item);
+        LockedItems.saveItems(this, "locked", lockedFiles);
+    }
+
     public void unlockItem(String item) {
+
         lockedFiles.remove(item);
         LockedItems.saveItems(this, "locked", lockedFiles);
     }
@@ -184,7 +196,6 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         if (count >= dropboxService.dropboxItem.entry.contents.size()) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             setContentView(R.layout.activity_folder_list);
-//            FolderAdapter adapter = new FolderAdapter(this, dropboxService.dropboxItem);
             ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem);
             listView = (ListView)findViewById(R.id.list);
             listView.setAdapter(adapter);
@@ -209,13 +220,14 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
                     } else if (fileType == null) {
                         String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
                         getFolder(folderPath);
-                    } else if (fileType.startsWith("video")) {
-                        String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
-                        getFile(filePath);
-                    } else if (fileType.startsWith("image")) {
+                    } else if (fileType.startsWith("image") || fileType.startsWith("video")) {
                         String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
                         getFile(filePath);
                     }
+//                    else if (fileType.startsWith("image")) {
+//                        String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
+//                        getFile(filePath);
+//                    }
                 }
             });
         }
@@ -282,8 +294,10 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
                 iconDownload.setFolder(path, mDBApi);
             } else if(type.startsWith("application/")){
                 iconDownload.setDoc(path, mDBApi);
-            } else {
+            } else if (type.startsWith("image") || type.startsWith("video")){
                 iconDownload.downloadThumb(path, fileName, mDBApi);
+            } else {
+                iconDownload.setPlaceholder(path, mDBApi);
             }
         }
         count = 0;

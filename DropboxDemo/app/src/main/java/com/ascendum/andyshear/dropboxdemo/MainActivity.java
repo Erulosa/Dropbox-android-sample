@@ -70,19 +70,10 @@ public class MainActivity extends Activity {
 
     }
 
-    public void recordKnurldTest(View view) {
-//        KnurldService kService = new KnurldService();
-//        String test = kService.getToken();
+    public void knurldSettings(View view) {
         Intent intent = new Intent(this, KnurldActivity.class);
         startActivity(intent);
     }
-
-    public void recordTest(View view) {
-        Intent intent = new Intent(this, RecordWAVActivity.class);
-        startActivity(intent);
-    }
-
-//    public void Knurld
 
     private AndroidAuthSession buildSession() {
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);

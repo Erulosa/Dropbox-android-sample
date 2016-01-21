@@ -3,10 +3,13 @@ package com.ascendum.andyshear.dropboxdemo;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,8 +40,8 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
     @Override
     public View generateView(int i, ViewGroup viewGroup) {
         final int position = i;
-        View v = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
-        SwipeLayout swipeLayout = (SwipeLayout)v.findViewById(getSwipeLayoutResourceId(i));
+        final View v = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
+        final SwipeLayout swipeLayout = (SwipeLayout)v.findViewById(getSwipeLayoutResourceId(i));
         swipeLayout.addSwipeListener(new SimpleSwipeListener() {
             @Override
             public void onOpen(SwipeLayout layout) {
@@ -50,14 +53,24 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
                 Toast.makeText(context, "delete", Toast.LENGTH_SHORT).show();
+                swipeLayout.close(true);
             }
         });
 
         v.findViewById(R.id.lock).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dropboxItem.entry.contents.get(position).readOnly = (dropboxItem.entry.contents.get(position).readOnly == true) ? false : true;
-                Toast.makeText(context, "lock", Toast.LENGTH_SHORT).show();
+                if (context instanceof DropboxActivity) {
+                    RecordWAVService recordWAVService = new RecordWAVService(context, v);
+                    dropboxItem.entry.contents.get(position).readOnly = (dropboxItem.entry.contents.get(position).readOnly == true) ? false : true;
+                    if (dropboxItem.entry.contents.get(position).readOnly) {
+                        recordWAVService.lock(dropboxItem.entry.contents.get(position).fileName());
+
+                    } else {
+                        recordWAVService.unLock(dropboxItem.entry.contents.get(position).fileName());
+                    }
+                    swipeLayout.close(true);
+                }
             }
         });
 

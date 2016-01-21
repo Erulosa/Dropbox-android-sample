@@ -79,4 +79,13 @@
         android:layout_below="@+id/setEnrollment"
         android:layout_centerHorizontal="true"
         android:onClick="getKnurldEnrollment" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record Enrollment"
+        android:id="@+id/recordEnrollment"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="recordEnrollment" />
 </RelativeLayout>

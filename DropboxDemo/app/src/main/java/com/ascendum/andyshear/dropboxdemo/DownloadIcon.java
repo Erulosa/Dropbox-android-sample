@@ -48,6 +48,13 @@ public class DownloadIcon {
         return null;
     }
 
+    public Bitmap setPlaceholder(String path, DropboxAPI api) {
+        mDBApi = api;
+        DocLoadTask docLoadTask = new DocLoadTask(path);
+        docLoadTask.execute();
+        return null;
+    }
+
     public class ThumbnailLoadTask extends AsyncTask<Void, Void, Bitmap> {
         public String path;
         public String fileName;
@@ -159,7 +166,7 @@ public class DownloadIcon {
             super.onPostExecute(result);
             FileOutputStream out;
             String filePath = Environment.getExternalStorageDirectory().toString();
-            File file = new File(filePath, "test"+path+".jpeg");
+            File file = new File(filePath, path+".png");
             try {
                 out = new FileOutputStream(file);
                 result.compress(Bitmap.CompressFormat.JPEG, 100, out);
@@ -173,7 +180,46 @@ public class DownloadIcon {
             }
 
 
-            done.processFinish("images", "test"+path+".jpeg");
+            done.processFinish("images", path+".png");
+        }
+    }
+
+    public class PlaceholderLoadTask extends AsyncTask<Void, Void, Bitmap> {
+        public String path;
+
+        public PlaceholderLoadTask(String path) {
+            this.path = path;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... params) {
+            DropboxAPI.Entry existingEntry = null;
+            Bitmap image = null;
+            image = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
+
+            return image;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            super.onPostExecute(result);
+            FileOutputStream out;
+            String filePath = Environment.getExternalStorageDirectory().toString();
+            File file = new File(filePath, path+".png");
+            try {
+                out = new FileOutputStream(file);
+                result.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+                out.flush();
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            done.processFinish("images", path+".png");
         }
     }
 
