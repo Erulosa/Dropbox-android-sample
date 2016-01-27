@@ -10,9 +10,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -21,6 +24,7 @@ import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,7 +33,7 @@ import java.util.ArrayList;
 /**
  * Created by andyshear on 12/21/15.
  */
-public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnurldResponse {
+public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnurldVerification{
 
     final static private String APP_KEY = "d3zx13rhlc2jbpr";
     final static private String APP_SECRET = "rfnin8j6dr3uhuv";
@@ -50,6 +54,9 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     public int count = 0;
 
     public DropboxService dropboxService;
+    public boolean doneEnrolling;
+    public boolean isUserReady;
+    public AsyncKnurldVerification knurldVerification;
 
 
 
@@ -66,9 +73,16 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     private static final String KNURLD_APP_MODEL = "KNURLD_APP_MODEL";
     private static final String KNURLD_CONSUMER = "KNURLD_CONSUMER";
     private static final String KNURLD_VERIFICATION = "KNURLD_VERIFICATION";
+    private static final String KNURLD_ENROLLMENT = "KNURLD_ENROLLMENT";
     private static final String KNURLD_ANALYSIS = "KNURLD_ANALYSIS";
 
     private ArrayList<String> lockedFiles;
+
+    public VerificationItem verificationItem;
+
+    public Thread knurldServiceThread;
+
+    private PopupWindow popupWindow;
 
 
     @Override
@@ -85,32 +99,45 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         String knurldToken = intent.getStringExtra(KNURLD_TOKEN);
         String knurldApp = intent.getStringExtra(KNURLD_APP_MODEL);
         String knurldConsumer = intent.getStringExtra(KNURLD_CONSUMER);
-        String knurldVerification = intent.getStringExtra(KNURLD_VERIFICATION);
-        String knurldAnalysis = intent.getStringExtra(KNURLD_ANALYSIS);
+        String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
-        if (knurldToken == null) {
-            knurldService = new KnurldService(this);
-            knurldService.getToken();
-        } else {
-            knurldService = new KnurldService(this, knurldToken);
-            knurldAccessToken = knurldToken;
-            if (knurldApp != null) {
-                knurldAppModel = new KnurldAppModel();
-                knurldAppModel.appModelId = knurldApp;
+        knurldVerification = this;
+        knurldServiceThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                knurldService = new KnurldService(knurldVerification);
             }
-            if (knurldConsumer != null) {
-                knurldConsumerModel = new KnurldConsumerModel();
-                knurldConsumerModel.consumerModelId = knurldConsumer;
-            }
-            if (knurldVerification != null) {
-                knurldVerificationModel = new KnurldVerificationModel();
-                knurldVerificationModel.verificationId = knurldVerification;
-            }
-            if (knurldAnalysis != null) {
-                knurldAnalysisModel = new KnurldAnalysisModel();
-                knurldAnalysisModel.taskName = knurldAnalysis;
-            }
-        }
+        });
+
+        knurldServiceThread.start();
+        isUserReady = false;
+
+//        getKnurldService();
+
+
+//        if (knurldToken == null) {
+//            knurldService = new KnurldService(this);
+//            knurldService.getToken();
+//        } else {
+//            knurldService = new KnurldService(this, knurldToken);
+//            knurldAccessToken = knurldToken;
+//            if (knurldApp != null) {
+//                knurldAppModel = new KnurldAppModel();
+//                knurldAppModel.appModelId = knurldApp;
+//            }
+//            if (knurldConsumer != null) {
+//                knurldConsumerModel = new KnurldConsumerModel();
+//                knurldConsumerModel.consumerModelId = knurldConsumer;
+//            }
+//            if (knurldVerification != null) {
+//                knurldVerificationModel = new KnurldVerificationModel();
+//                knurldVerificationModel.verificationId = knurldVerification;
+//            }
+//            if (knurldAnalysis != null) {
+//                knurldAnalysisModel = new KnurldAnalysisModel();
+//                knurldAnalysisModel.taskName = knurldAnalysis;
+//            }
+//        }
 
 
 
@@ -143,6 +170,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
 
         folderPath = "/";
     }
+
 
     private AndroidAuthSession buildSession() {
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
@@ -179,21 +207,59 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     }
 
     public void lockItem(String item) {
+        View view = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
+        View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
+        ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
 
-        lockedFiles.add(item);
-        LockedItems.saveItems(this, "locked", lockedFiles);
+        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        popupWindow.setFocusable(true);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+
+        knurldService.knurldAnalysis(this);
+        verificationItem = new VerificationItem();
+        verificationItem.itemName = item;
+        verificationItem.locked = true;
     }
 
     public void unlockItem(String item) {
+        View view = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
+        View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
+        ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
 
-        lockedFiles.remove(item);
-        LockedItems.saveItems(this, "locked", lockedFiles);
+        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        popupWindow.setFocusable(true);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+
+        knurldService.knurldAnalysis(this);
+        verificationItem = new VerificationItem();
+        verificationItem.itemName = item;
+        verificationItem.locked = false;
+    }
+
+    public void authenticateItem() {
+        popupWindow.dismiss();
+        setItem(verificationItem.locked, verificationItem.itemName);
+    }
+
+    public void setItem(boolean locked, String item) {
+        if (locked) {
+            lockedFiles.remove(item);
+            LockedItems.saveItems(this, "locked", lockedFiles);
+        } else {
+            lockedFiles.add(item);
+            LockedItems.saveItems(this, "locked", lockedFiles);
+        }
     }
 
     @Override
     public void processFinish(String method, String output) {
         count++;
         if (count >= dropboxService.dropboxItem.entry.contents.size()) {
+
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             setContentView(R.layout.activity_folder_list);
             ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem);
@@ -204,30 +270,29 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    String fileType = dropboxService.dropboxItem.entry.contents.get(position).mimeType;
-                    boolean locked = dropboxService.dropboxItem.entry.contents.get(position).readOnly;
-                    if (locked && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
-                        String test = "";
+                    if (isUserReady) {
+                        String fileType = dropboxService.dropboxItem.entry.contents.get(position).mimeType;
+                        boolean locked = dropboxService.dropboxItem.entry.contents.get(position).readOnly;
+                        if (locked && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
+                            String test = "";
 
-                    } else if (locked && !lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
-                        String test = "";
-                    } else if (!locked && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
-                        unlockItem(dropboxService.dropboxItem.entry.contents.get(position).fileName());
+                        } else if (locked && !lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
+                            String test = "";
+                        } else if (!locked && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
+//                            unlockItem(dropboxService.dropboxItem.entry.contents.get(position).fileName());
+                        }
+
+                        if (locked) {
+                            Toast.makeText(context, "Item is Locked", Toast.LENGTH_SHORT).show();
+                        } else if (fileType == null) {
+                            String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
+                            getFolder(folderPath);
+                        } else if (fileType.startsWith("image") || fileType.startsWith("video")) {
+                            String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
+                            getFile(filePath);
+                        }
                     }
 
-                    if (locked) {
-                        Toast.makeText(context, "Item is Locked", Toast.LENGTH_SHORT).show();
-                    } else if (fileType == null) {
-                        String folderPath = dropboxService.dropboxItem.entry.contents.get(position).path;
-                        getFolder(folderPath);
-                    } else if (fileType.startsWith("image") || fileType.startsWith("video")) {
-                        String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
-                        getFile(filePath);
-                    }
-//                    else if (fileType.startsWith("image")) {
-//                        String filePath = dropboxService.dropboxItem.entry.contents.get(position).path;
-//                        getFile(filePath);
-//                    }
                 }
             });
         }
@@ -304,65 +369,22 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     }
 
 
-
-    // KNURLD
-
-    public void getKnurldAppModel() {
-        if (knurldAppModel == null) {
-            knurldAppModel = new KnurldAppModel();
-            knurldService.indexAppModel();
-        } else if (knurldAppModel.appModelId != null){
-            knurldService.showAppModel(knurldAppModel.appModelId);
-        }
-    }
-
-    public void getKnurldConsumer() {
-        if (knurldConsumerModel == null) {
-            knurldConsumerModel = new KnurldConsumerModel();
-            knurldService.indexConsumer();
-        } else if (knurldConsumerModel.consumerModelId != null){
-            knurldService.showConsumer(knurldConsumerModel.consumerModelId);
-        }
-    }
-
-    public void setKnurldEndpointAnalysis(View view) {
-        if (knurldAnalysisModel == null) {
-            knurldAnalysisModel = new KnurldAnalysisModel();
-        }
-        String testEndpoint = "{\"filedata\":\"enrollment.wav\",\"words\":\"3\"}";
-        knurldService.createEndpointAnalysis(testEndpoint);
-    }
-
-    public void getKnurldEndpointAnalysis(View view) {
-        if (knurldAnalysisModel == null) {
-            knurldAnalysisModel = new KnurldAnalysisModel();
-            String testEndpoint = "{\"filedata\":\"enrollment.wav\",\"words\":\"3\"}";
-            knurldService.createEndpointAnalysis(testEndpoint);
-        } else if (knurldAnalysisModel.taskName != null){
-            knurldService.showEndpointAnalysis(knurldAnalysisModel.taskName);
-        }
-
-    }
-
-
-
     @Override
-    public void processFinish(String call, String method, String result) {
+    public void processFinish(String method, boolean result) {
 
-        if (method.equals("accessToken")) {
-            knurldAccessToken = knurldService.getAccessToken();
-            getKnurldAppModel();
-            getKnurldConsumer();
-        } else if(method.contains("app-models")) {
-            knurldAppModel.buildFromResponse(result);
-        } else if(method.contains("enrollments")) {
-            knurldEnrollmentsModel.buildFromResponse(result);
-        } else if(method.contains("endpointAnalysis")) {
-            knurldAnalysisModel.buildFromResponse(result);
-        } else if(method.contains("consumers")) {
-            knurldConsumerModel.buildFromResponse(result);
-        } else if(method.contains("verifications")) {
-            knurldVerificationModel.buildFromResponse(result);
+        switch (method) {
+            case "userReady":
+                isUserReady = result;
+                break;
+            case "analysis":
+                knurldService.knurldVerify(this);
+                break;
+            case "verification":
+                if (result)
+                    authenticateItem();
         }
+
+
     }
+    
 }

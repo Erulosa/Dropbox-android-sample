@@ -16,13 +16,16 @@ public class KnurldVerificationModel {
     private String appModel;
     private String verifivationWAV;
     public JSONArray intervals;
+    public boolean verified;
+    public boolean isActive;
 
     private String href;
 
     public String verificationId;
+    public String activeVerification;
 
     public KnurldVerificationModel() {
-
+        verified = false;
     }
 
     public KnurldVerificationModel(String developerId, String consumer, String appModel) {
@@ -48,6 +51,16 @@ public class KnurldVerificationModel {
         this.href = href;
     }
 
+    public void setVerification(String href) {
+        this.activeVerification = href.substring(href.lastIndexOf("/") + 1);
+        this.href = href;
+    }
+
+
+    public boolean isVerified() {
+        return verified;
+    }
+
     public void buildFromResponse(String result) {
         JSONObject jsonParam = null;
 
@@ -57,15 +70,26 @@ public class KnurldVerificationModel {
             if (items != null && items.length() > 0) {
                 JSONObject item = (JSONObject) items.get(0);
                 intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
+                verified = item.has("status") && item.getString("status").contains("completed");
+                if (!verified) {
+                    isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
+                }
                 String h = item.has("href") ? item.getString("href") : null;
-                if (h != null) {
+                if (h != null && isActive) {
                     setHref(h);
                 }
             } else {
                 intervals = jsonParam.has("intervals") ? jsonParam.getJSONArray("intervals") : null;
+                verified = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
+                if (!verified) {
+                    isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
+                }
                 String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
-                if (h != null) {
+                if (this.activeVerification != null) {
                     setHref(h);
+                }
+                if (h != null && !verified) {
+                    setVerification(h);
                 }
             }
 
