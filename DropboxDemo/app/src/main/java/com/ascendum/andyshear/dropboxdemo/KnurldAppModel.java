@@ -30,6 +30,10 @@ public class KnurldAppModel {
 
     }
 
+    public KnurldAppModel(String appModelId) {
+        this.appModelId = appModelId;
+    }
+
     public KnurldAppModel(String developerId, String authorization, int enrollmentRepeats, JSONArray vocabulary, int verificationLength, float threshold, boolean autoThresholdEnable, int autoThresholdClearance, int authThresholdMaxRise, boolean useModelUpdate, int modelUpdateDailyLimit, String href, String appModelId) {
         this.developerId = developerId;
         this.authorization = authorization;

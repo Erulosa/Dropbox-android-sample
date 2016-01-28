@@ -96,16 +96,16 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
 
         lockedFiles = new ArrayList<String>();
 
-        String knurldToken = intent.getStringExtra(KNURLD_TOKEN);
-        String knurldApp = intent.getStringExtra(KNURLD_APP_MODEL);
-        String knurldConsumer = intent.getStringExtra(KNURLD_CONSUMER);
-        String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
+        final String knurldToken = intent.getStringExtra(KNURLD_TOKEN);
+        final String knurldApp = intent.getStringExtra(KNURLD_APP_MODEL);
+        final String knurldConsumer = intent.getStringExtra(KNURLD_CONSUMER);
+        final String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
         knurldVerification = this;
         knurldServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                knurldService = new KnurldService(knurldVerification);
+                knurldService = new KnurldService(knurldVerification, knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
             }
         });
 
@@ -273,14 +273,6 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
                     if (isUserReady) {
                         String fileType = dropboxService.dropboxItem.entry.contents.get(position).mimeType;
                         boolean locked = dropboxService.dropboxItem.entry.contents.get(position).readOnly;
-                        if (locked && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
-                            String test = "";
-
-                        } else if (locked && !lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
-                            String test = "";
-                        } else if (!locked && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(position).fileName())) {
-//                            unlockItem(dropboxService.dropboxItem.entry.contents.get(position).fileName());
-                        }
 
                         if (locked) {
                             Toast.makeText(context, "Item is Locked", Toast.LENGTH_SHORT).show();

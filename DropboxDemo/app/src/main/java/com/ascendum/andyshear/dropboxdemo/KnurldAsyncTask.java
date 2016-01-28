@@ -342,6 +342,7 @@ public class KnurldAsyncTask {
 
                 Log.d("ResponseMessage", sb.toString());
             } else{
+                method = "verificationFailed";
                 Log.d("ResponseMessage", urlConnection.getResponseMessage());
             }
 

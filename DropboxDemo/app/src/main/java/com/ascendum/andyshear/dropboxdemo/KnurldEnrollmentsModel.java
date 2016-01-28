@@ -22,6 +22,10 @@ public class KnurldEnrollmentsModel {
 
     }
 
+    public KnurldEnrollmentsModel(String enrollmentId) {
+        this.enrollmentId = enrollmentId;
+    }
+
     public KnurldEnrollmentsModel(String developerId, String authorization, String consumer, String application) {
         this.developerId = developerId;
         this.authorization = authorization;

@@ -22,6 +22,10 @@ public class KnurldConsumerModel {
 
     }
 
+    public KnurldConsumerModel(String consumerId) {
+        this.consumerModelId = consumerId;
+    }
+
     public KnurldConsumerModel(String developerId, String authorization, String gender, String username, String password, String href) {
         this.developerId = developerId;
         this.authorization = authorization;

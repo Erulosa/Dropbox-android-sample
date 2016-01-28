@@ -71,6 +71,23 @@ public class KnurldService implements AsyncKnurldResponse {
         setupKnurldUser();
     }
 
+    public KnurldService(AsyncKnurldVerification verificationResponse, String accessToken, String appModelId, String consumerId, String enrollmentId) {
+        response = this;
+        this.resp = verificationResponse;
+        isUserReady = false;
+        if (accessToken != null) {
+            CLIENT_TOKEN = accessToken;
+            setupExistingKnurldUser();
+//            knurldAppModel = appModelId != null ? new KnurldAppModel(appModelId) : appModelService.indexAppModel();
+            knurldConsumerModel = consumerId != null ? new KnurldConsumerModel(consumerId) : consumerService.indexConsumer();
+            knurldEnrollmentsModel = enrollmentId != null ? new KnurldEnrollmentsModel(enrollmentId) : enrollmentService.indexEnrollment();
+            createKnurldVerification();
+        } else {
+            getToken();
+            setupKnurldUser();
+        }
+    }
+
     public KnurldService(AsyncKnurldResponse response, String token) {
         this.response = response;
 
@@ -94,24 +111,33 @@ public class KnurldService implements AsyncKnurldResponse {
         enrollmentService = (enrollmentService == null) ? new KnurldEnrollmentService(response) : enrollmentService;
         verificationService = (verificationService == null) ? new KnurldVerificationService(response) : verificationService;
 
-        knurldAppModel = appModelService.indexAppModel();
+        appModelService.index();
         knurldConsumerModel = consumerService.indexConsumer();
         knurldEnrollmentsModel = enrollmentService.indexEnrollment();
         knurldVerificationModel = verificationService.indexVerification();
     }
 
+    public void setupExistingKnurldUser() {
+        appModelService = (appModelService == null) ? new KnurldAppModelService(response) : appModelService;
+        consumerService = (consumerService == null) ? new KnurldConsumerService(response) : consumerService;
+        analysisService = (analysisService == null) ? new KnurldAnalysisService(response) : analysisService;
+        enrollmentService = (enrollmentService == null) ? new KnurldEnrollmentService(response) : enrollmentService;
+        verificationService = (verificationService == null) ? new KnurldVerificationService(response) : verificationService;
+    }
+
     public void isUserReady() {
-        boolean modelReady = (knurldAppModel.appModelId != null);
+//        boolean modelReady = (knurldAppModel.appModelId != null);
         boolean consumerReady = (knurldConsumerModel.consumerModelId != null);
         boolean enrollmentReady = (knurldEnrollmentsModel.enrollmentId != null);
         boolean verificationReady = (knurldVerificationModel.activeVerification != null);
-        if(modelReady && consumerReady && enrollmentReady && verificationReady) {
+        if(appModelService.appModelReady() && consumerReady && enrollmentReady && verificationReady) {
             resp.processFinish("userReady", true);
         }
     }
 
     public void createKnurldVerification() {
-        String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + knurldAppModel.getHref() + "\"}";
+        String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + appModelService.getHref() + "\"}";
+//        String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + knurldAppModel.getHref() + "\"}";
         knurldVerificationModel = new KnurldVerificationModel();
         verificationService.createVerification(testVerification);
     }
@@ -122,7 +148,6 @@ public class KnurldService implements AsyncKnurldResponse {
         kAV.delegate = response;
         this.resp = response;
         kAV.execute("analysisStart", testEndpoint);
-//        knurldAnalysisModel = analysisService.createEndpointAnalysis(testEndpoint);
     }
 
     public void knurldVerify(AsyncKnurldVerification response) {
@@ -130,7 +155,8 @@ public class KnurldService implements AsyncKnurldResponse {
 
         JSONObject enrollmentBody = new JSONObject();
         JSONArray phrases = knurldAnalysisModel.intervals;
-        JSONArray vocab = knurldAppModel.getVocabulary();
+        JSONArray vocab = appModelService.getVocab();
+//        JSONArray vocab = knurldAppModel.getVocabulary();
         for (int i = 0; i<phrases.length(); i++) {
             try {
                 JSONObject j = phrases.getJSONObject(i);
@@ -148,7 +174,6 @@ public class KnurldService implements AsyncKnurldResponse {
         kAV.delegate = response;
         this.resp = response;
         kAV.execute("verify", enrollmentBody.toString());
-//        verificationService.updateVerification(knurldVerificationModel.getHref(), enrollmentBody.toString());
     }
 
     private class KnurldAsyncVerification extends AsyncTask<String, String, String[]> implements AsyncKnurldResponse {
@@ -217,11 +242,6 @@ public class KnurldService implements AsyncKnurldResponse {
         return analysis;
     }
 
-    public boolean isVerificationReady() {
-        boolean verificationReady = (knurldVerificationModel.verificationId != null);
-        return verificationReady;
-    }
-
     public boolean isVerificationFinished() {
         if (!knurldVerificationModel.verified && knurldAnalysisModel != null) {
             Thread t = new Thread(new Runnable() {
@@ -240,13 +260,6 @@ public class KnurldService implements AsyncKnurldResponse {
         }
         return knurldVerificationModel.verified;
     }
-
-    public boolean isVerificationDone() {
-        return knurldVerificationModel.verified;
-    }
-
-
-
 
     @Override
     public void processFinish(String call, String method, String output) {
@@ -289,11 +302,12 @@ public class KnurldService implements AsyncKnurldResponse {
             case "verifications" :
                 knurldVerificationModel.buildFromResponse(output);
                 if (isVerificationFinished()) {
-//                    knurldAnalysisModel = null;
+                    knurldVerificationModel.verified = false;
                     resp.processFinish("verification", true);
                 }
-
-
+                break;
+            case "verificationFailed" :
+                createKnurldVerification();
                 break;
         }
 
