@@ -47,7 +47,7 @@ public class KnurldService implements AsyncKnurldResponse {
     public KnurldVerificationService verificationService;
 
     //MODELS
-    public KnurldAppModel knurldAppModel;
+//    public KnurldAppModel knurldAppModel;
     public KnurldConsumerModel knurldConsumerModel;
     public KnurldEnrollmentsModel knurldEnrollmentsModel;
     public KnurldVerificationModel knurldVerificationModel;
@@ -114,7 +114,7 @@ public class KnurldService implements AsyncKnurldResponse {
         appModelService.index();
         knurldConsumerModel = consumerService.indexConsumer();
         knurldEnrollmentsModel = enrollmentService.indexEnrollment();
-        knurldVerificationModel = verificationService.indexVerification();
+//        knurldVerificationModel = verificationService.indexVerification();
     }
 
     public void setupExistingKnurldUser() {
@@ -129,8 +129,8 @@ public class KnurldService implements AsyncKnurldResponse {
 //        boolean modelReady = (knurldAppModel.appModelId != null);
         boolean consumerReady = (knurldConsumerModel.consumerModelId != null);
         boolean enrollmentReady = (knurldEnrollmentsModel.enrollmentId != null);
-        boolean verificationReady = (knurldVerificationModel.activeVerification != null);
-        if(appModelService.appModelReady() && consumerReady && enrollmentReady && verificationReady) {
+//        boolean verificationReady = (knurldVerificationModel.activeVerification != null);
+        if(appModelService.appModelReady() && consumerReady && enrollmentReady) {
             resp.processFinish("userReady", true);
         }
     }
@@ -266,9 +266,10 @@ public class KnurldService implements AsyncKnurldResponse {
 
         switch (method) {
             case "accessToken" :
+                CLIENT_TOKEN = output;
                 break;
             case "app-models" :
-                knurldAppModel.buildFromResponse(output);
+                appModelService.setKnurldAppModel(output);
                 isUserReady();
                 break;
             case "consumers" :
@@ -311,5 +312,114 @@ public class KnurldService implements AsyncKnurldResponse {
                 break;
         }
 
+    }
+
+
+
+
+
+    public String startVerification() {
+        final String[] response = {null};
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Create verification
+                String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + appModelService.getHref() + "\"}";
+                knurldVerificationModel = new KnurldVerificationModel();
+                verificationService = new KnurldVerificationService(CLIENT_TOKEN);
+                knurldVerificationModel.buildFromResponse(verificationService.create(testVerification)[1]);
+                response[0] = verificationService.show(knurldVerificationModel.activeVerification)[1];
+
+                try {
+                    finalize();
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        });
+        t.start();
+
+        while (t.isAlive()) {
+
+        }
+
+        return response[0];
+    }
+
+
+
+
+
+    // Perform analysis and verification synchronously, returns when verification passes/fails
+    public boolean verify() {
+
+        // Create analysis endpoint
+        String testEndpoint = "{\"filedata\":\"verification.wav\",\"words\":\"3\"}";
+        analysisService = new KnurldAnalysisService(CLIENT_TOKEN);
+        knurldAnalysisModel.buildFromResponse(analysisService.createAnalysis(testEndpoint)[1]);
+
+
+        // Poll for analysis to finish
+        while (!(knurldAnalysisModel.intervals == null)) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            });
+            t.start();
+            try {
+                t.sleep(500, 0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            knurldAnalysisModel.buildFromResponse(analysisService.showAnalysis(knurldAnalysisModel.taskName)[1]);
+        }
+
+
+
+
+        // Update verification, set phrases to intervals
+        JSONObject enrollmentBody = new JSONObject();
+        JSONArray phrases = knurldAnalysisModel.intervals;
+        JSONArray vocab = appModelService.getVocab();
+        for (int i = 0; i<phrases.length(); i++) {
+            try {
+                JSONObject j = phrases.getJSONObject(i);
+                j.put("phrase", vocab.get(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            enrollmentBody.put("intervals", phrases);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        knurldVerificationModel.buildFromResponse(verificationService.update(knurldVerificationModel.activeVerification, enrollmentBody.toString())[1]);
+
+        // Poll for verification to finish
+        while (!knurldVerificationModel.verified && knurldAnalysisModel != null) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            });
+            t.start();
+            try {
+                t.sleep(500, 0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            knurldVerificationModel.buildFromResponse(verificationService.show(knurldVerificationModel.verificationId)[1]);
+        }
+
+
+        boolean test = knurldVerificationModel.isVerified();
+
+        return false;
     }
 }

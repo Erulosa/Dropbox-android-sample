@@ -21,6 +21,7 @@ import java.io.IOException;
 public class DownloadIcon {
     private DropboxAPI<AndroidAuthSession> mDBApi;
     public DropboxActivity done;
+    public DropboxActivity finished;
     public Context context;
 
     public DownloadIcon(Context context) {
@@ -53,6 +54,10 @@ public class DownloadIcon {
         DocLoadTask docLoadTask = new DocLoadTask(path);
         docLoadTask.execute();
         return null;
+    }
+
+    public void finish() {
+        finished.processFinish("images", "finished");
     }
 
     public class ThumbnailLoadTask extends AsyncTask<Void, Void, Bitmap> {

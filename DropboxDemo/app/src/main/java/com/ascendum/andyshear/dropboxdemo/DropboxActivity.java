@@ -217,7 +217,8 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
 
 
-        knurldService.knurldAnalysis(this);
+//        knurldService.knurldAnalysis(this);
+//        knurldService.startVerification();
         verificationItem = new VerificationItem();
         verificationItem.itemName = item;
         verificationItem.locked = true;
@@ -234,7 +235,8 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
 
 
-        knurldService.knurldAnalysis(this);
+//        knurldService.knurldAnalysis(this);
+//        knurldService.startVerification();
         verificationItem = new VerificationItem();
         verificationItem.itemName = item;
         verificationItem.locked = false;
@@ -257,12 +259,13 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
 
     @Override
     public void processFinish(String method, String output) {
-        count++;
-        if (count >= dropboxService.dropboxItem.entry.contents.size()) {
+
+
+        if (output.equals("finished")) {
 
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             setContentView(R.layout.activity_folder_list);
-            ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem);
+            ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem, knurldService);
             listView = (ListView)findViewById(R.id.list);
             listView.setAdapter(adapter);
 
@@ -342,6 +345,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             String type = dropboxService.dropboxItem.entry.contents.get(i).mimeType;
             DownloadIcon iconDownload = new DownloadIcon(context);
             iconDownload.done = this;
+            iconDownload.finished = this;
 
             if (lockedFiles != null && lockedFiles.contains(dropboxService.dropboxItem.entry.contents.get(i).fileName())) {
                 dropboxService.dropboxItem.entry.contents.get(i).readOnly = true;
@@ -356,8 +360,11 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             } else {
                 iconDownload.setPlaceholder(path, mDBApi);
             }
+
+            if (i+1 == dropboxService.dropboxItem.entry.contents.size()) {
+                iconDownload.finish();
+            }
         }
-        count = 0;
     }
 
 

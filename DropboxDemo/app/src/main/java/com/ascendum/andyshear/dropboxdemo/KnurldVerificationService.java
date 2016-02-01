@@ -6,10 +6,15 @@ package com.ascendum.andyshear.dropboxdemo;
 public class KnurldVerificationService {
 
     private KnurldAsyncTask knurldAsync;
+    private KnurldAPIResource knurldAPIResource;
     AsyncKnurldResponse response;
 
     public KnurldVerificationService(AsyncKnurldResponse response) {
         this.response = response;
+    }
+
+    public KnurldVerificationService(String token) {
+        knurldAPIResource = new KnurldAPIResource(token);
     }
 
     public KnurldVerificationModel indexVerification(){
@@ -27,5 +32,17 @@ public class KnurldVerificationService {
 
     public void updateVerification(String verification, String body){
         knurldAsync = new KnurldAsyncTask(response, KnurldUtility.POST, "verifications", verification, body);
+    }
+
+    public String[] show(String verification){
+        return knurldAPIResource.request(KnurldUtility.GET, "verifications", verification, null);
+    }
+
+    public String[] create(String body){
+        return knurldAPIResource.request(KnurldUtility.POST, "verifications", null, body);
+    }
+
+    public String[] update(String verification, String body){
+        return knurldAPIResource.request(KnurldUtility.POST, "verifications", verification, body);
     }
 }

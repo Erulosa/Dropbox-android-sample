@@ -26,8 +26,10 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
 
     private Context context;
     DropboxItem dropboxItem;
+    private KnurldService knurldService;
 
-    public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem) {
+    public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem, KnurldService knurldService) {
+        this.knurldService = knurldService;
         this.context = context;
         this.dropboxItem = dropboxItem;
     }
@@ -61,7 +63,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
             @Override
             public void onClick(View view) {
                 if (context instanceof DropboxActivity) {
-                    RecordWAVService recordWAVService = new RecordWAVService(context, v);
+                    RecordWAVService recordWAVService = new RecordWAVService(context, v, knurldService);
                     dropboxItem.entry.contents.get(position).readOnly = (dropboxItem.entry.contents.get(position).readOnly == true) ? false : true;
                     if (dropboxItem.entry.contents.get(position).readOnly) {
                         recordWAVService.lock(dropboxItem.entry.contents.get(position).fileName());

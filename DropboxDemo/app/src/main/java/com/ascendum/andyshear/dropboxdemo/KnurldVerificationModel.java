@@ -18,6 +18,7 @@ public class KnurldVerificationModel {
     public JSONArray intervals;
     public boolean verified;
     public boolean isActive;
+    public String phrases;
 
     private String href;
 

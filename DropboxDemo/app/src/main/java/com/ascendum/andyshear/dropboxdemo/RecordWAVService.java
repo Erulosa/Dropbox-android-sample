@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +46,10 @@ public class RecordWAVService {
     private PopupWindow popupWindow;
     private View view;
 
-    public RecordWAVService(Context context, View v) {
+    public KnurldService knurldService;
+
+    public RecordWAVService(Context context, View v, KnurldService knurldService) {
+        this.knurldService = knurldService;
         this.context = context;
         this.view = v;
         bufferSize = AudioRecord.getMinBufferSize(8000,
@@ -57,9 +61,12 @@ public class RecordWAVService {
     }
 
     public void lock(final String lock) {
+        knurldService.startVerification();
         View spinnerView = LayoutInflater.from(context).inflate(R.layout.lock_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+        TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
+        textView.setText(knurldService.knurldVerificationModel.phrases);
 
         popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
@@ -77,9 +84,12 @@ public class RecordWAVService {
     }
 
     public void unLock(final String unlock) {
+        knurldService.startVerification();
         View spinnerView = LayoutInflater.from(context).inflate(R.layout.unlock_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+        TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
+        textView.setText(knurldService.knurldVerificationModel.phrases);
 
         popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);

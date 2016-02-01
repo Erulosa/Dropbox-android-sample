@@ -12,6 +12,7 @@ public class KnurldAppModelService extends KnurldResource {
 
     public KnurldAppModelService(AsyncKnurldResponse response) {
         this.response = response;
+        knurldAppModel = new KnurldAppModel();
     }
 
     @Override
