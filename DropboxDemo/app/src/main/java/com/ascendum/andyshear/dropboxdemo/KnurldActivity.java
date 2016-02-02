@@ -1,12 +1,17 @@
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -16,7 +21,7 @@ import org.json.JSONObject;
 /**
  * Created by andyshear on 1/12/16.
  */
-public class KnurldActivity extends Activity implements AsyncKnurldResponse {
+public class KnurldActivity extends Activity implements AsyncKnurldResponse, AsyncKnurldVerification {
 
     public KnurldService knurldService;
     public KnurldAppModel knurldAppModel;
@@ -26,8 +31,17 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
     public KnurldAnalysisModel knurldAnalysisModel;
 
 
+    public AsyncKnurldVerification knurldVerification;
+
+
+    public Thread knurldServiceThread;
+
+    public boolean isUserReady;
+
     public String taskName;
     public JSONObject intervals;
+
+    public PopupWindow popupWindow;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,8 +50,52 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressSpinner);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.rgb(226, 132, 59), PorterDuff.Mode.MULTIPLY);
 
-        knurldService = new KnurldService();
-        knurldService.getToken();
+        isUserReady = false;
+        knurldVerification = this;
+        knurldServiceThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                knurldService = new KnurldService(knurldVerification);
+            }
+        });
+
+        knurldServiceThread.start();
+    }
+
+
+    public PopupWindow showLoading() {
+        View view = LayoutInflater.from(this).inflate(R.layout.activity_folder_swipe, null);
+        View spinnerView = LayoutInflater.from(this).inflate(R.layout.loading_popup, null);
+        ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+
+        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        popupWindow.setFocusable(true);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+        return popupWindow;
+    }
+
+    public void showInstructions() {
+        View view = LayoutInflater.from(this).inflate(R.layout.activity_folder_swipe, null);
+        View spinnerView = LayoutInflater.from(this).inflate(R.layout.loading_popup, null);
+
+
+        TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
+        textView.setText("Speak in order 3x:\n" + knurldService.knurldEnrollmentsModel.phrases);
+
+        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        popupWindow.setFocusable(true);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        popupWindow.dismiss();
+                    }
+                }, 3000);
+
     }
 
     public void recordEnrollment(View view) {
@@ -45,15 +103,9 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
         startActivity(intent);
     }
 
-//    public void setKnurldAppModel(View view) {
-//        String testAppModel = "{\"vocabulary\":[\"Boston\", \"Boston\", \"Boston\"],\"verificationLength\":\"3\"}";
-//        if (knurldAppModel == null) {
-//            knurldAppModel = new KnurldAppModel();
-//            knurldService.createAppModel(testAppModel);
-//        } else if (knurldAppModel.getHref() != null) {
-//            knurldService.updateAppModel(knurldAppModel.appModelId, testAppModel);
-//        }
-//    }
+    public void setKnurldAppModel(View view) {
+        knurldService.createKnurldAppModel();
+    }
 //
 //    public void getKnurldAppModel(View view) {
 //        if (knurldAppModel == null) {
@@ -103,32 +155,21 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
 //
 //    }
 //
-//    public void setKnurldEnrollment(View view) {
-//        String testEnrollment = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + knurldAppModel.getHref() + "\"}";
-//        if (knurldEnrollmentsModel == null) {
-//            knurldEnrollmentsModel = new KnurldEnrollmentsModel();
-//            knurldService.createEnrollment(testEnrollment);
-//        } else if (knurldEnrollmentsModel.enrollmentId != null){
-//            JSONObject enrollmentBody = new JSONObject();
-//            JSONArray phrases = knurldAnalysisModel.intervals;
-//            JSONArray vocab = knurldAppModel.getVocabulary();
-//            for (int i = 0; i<phrases.length(); i++) {
-//                try {
-//                    JSONObject j = phrases.getJSONObject(i);
-////                    j.put("phrase", "Boston");
-//                    j.put("phrase", vocab.get(i));
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            try {
-//                enrollmentBody.put("intervals", phrases);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            knurldService.updateEnrollment(knurldEnrollmentsModel.enrollmentId, enrollmentBody.toString());
-//        }
-//    }
+    public void setKnurldEnrollment(View view) {
+//        knurldService.createKnurldEnrollment();
+        popupWindow = showLoading();
+        knurldService.startEnrollment();
+        popupWindow.dismiss();
+    }
+
+    public void updateKnurldEnrollment(View view) {
+//        knurldService.updateKnurldEnrollment();
+        popupWindow = showLoading();
+        knurldService.enroll();
+        popupWindow.dismiss();
+
+        showInstructions();
+    }
 //
 //    public void getKnurldEnrollment(View view) {
 //        if (knurldEnrollmentsModel == null) {
@@ -206,6 +247,19 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse {
         } else if(method.contains("verifications")) {
             knurldVerificationModel.buildFromResponse(result);
         }
+
+    }
+
+    @Override
+    public void processFinish(String method, boolean result) {
+
+        switch (method) {
+            case "userReady":
+                setContentView(R.layout.knurld_setup);
+                isUserReady = result;
+                break;
+        }
+
 
     }
 

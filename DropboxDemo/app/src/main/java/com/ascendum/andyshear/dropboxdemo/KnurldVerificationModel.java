@@ -19,6 +19,7 @@ public class KnurldVerificationModel {
     public boolean verified;
     public boolean isActive;
     public String phrases;
+    public JSONArray phrasesArray;
 
     private String href;
 
@@ -71,6 +72,19 @@ public class KnurldVerificationModel {
             if (items != null && items.length() > 0) {
                 JSONObject item = (JSONObject) items.get(0);
                 intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
+                JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
+                if (instructions != null) {
+                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
+                    if (data != null) {
+                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
+                        phrases = "";
+                        if (phrasesArray != null) {
+                            for (int i = 0; i < phrasesArray.length(); i++) {
+                                phrases += phrasesArray.getString(i) + " ";
+                            }
+                        }
+                    }
+                }
                 verified = item.has("status") && item.getString("status").contains("completed");
                 if (!verified) {
                     isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
@@ -81,6 +95,21 @@ public class KnurldVerificationModel {
                 }
             } else {
                 intervals = jsonParam.has("intervals") ? jsonParam.getJSONArray("intervals") : null;
+                JSONObject instructions = jsonParam.has("instructions") ? jsonParam.getJSONObject("instructions") : null;
+                if (instructions != null) {
+                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
+                    if (data != null) {
+                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
+                        phrases = "";
+                        if (phrasesArray != null) {
+                            for (int i = 0; i < phrasesArray.length(); i++) {
+                                phrases += phrasesArray.getString(i) + " ";
+                            }
+                        }
+
+                    }
+                }
+
                 verified = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
                 if (!verified) {
                     isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");

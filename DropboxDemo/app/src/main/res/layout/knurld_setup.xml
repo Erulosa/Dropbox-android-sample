@@ -16,23 +16,11 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Consumer"
-        android:id="@+id/createConsumer"
-        android:layout_below="@+id/createAppModel"
-        android:layout_alignLeft="@+id/createAppModel"
-        android:layout_alignStart="@+id/createAppModel"
-        android:layout_marginTop="59dp"
-        android:onClick="setKnurldConsumer" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="Endpoint"
         android:id="@+id/endpoint"
         android:onClick="setKnurldEndpointAnalysis"
-        android:layout_below="@+id/getConsumer"
-        android:layout_alignRight="@+id/createConsumer"
-        android:layout_alignEnd="@+id/createConsumer" />
+        android:layout_below="@+id/getAppModel"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -56,15 +44,6 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="getConsumer"
-        android:id="@+id/getConsumer"
-        android:layout_below="@+id/createConsumer"
-        android:layout_centerHorizontal="true"
-        android:onClick="getKnurldConsumer" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="setEnrollment"
         android:id="@+id/setEnrollment"
         android:layout_below="@+id/getTask"
@@ -74,11 +53,12 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="getEnrollment"
-        android:id="@+id/getEnrollment"
+        android:text="updateEnrollment"
+        android:id="@+id/updateEnrollment"
         android:layout_below="@+id/setEnrollment"
         android:layout_centerHorizontal="true"
-        android:onClick="getKnurldEnrollment" />
+        android:onClick="updateKnurldEnrollment"
+        android:nestedScrollingEnabled="false" />
 
     <Button
         android:layout_width="wrap_content"

@@ -74,7 +74,7 @@ public class KnurldAppModel {
             jsonParam = new JSONObject(result);
             JSONArray items = jsonParam.has("items") ? jsonParam.getJSONArray("items") : null;
             if (items != null && items.length() > 0) {
-                JSONObject item = (JSONObject) items.get(0);
+                JSONObject item = (JSONObject) items.get(items.length()-1);
                 String h = item.has("href") ? item.getString("href") : null;
                 JSONArray vocab = item.has("vocabulary") ? item.getJSONArray("vocabulary") : null;
                 if (h != null) {

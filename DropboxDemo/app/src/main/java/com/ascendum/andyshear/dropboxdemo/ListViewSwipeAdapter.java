@@ -27,6 +27,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
     private Context context;
     DropboxItem dropboxItem;
     private KnurldService knurldService;
+    private PopupWindow popupWindow;
 
     public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem, KnurldService knurldService) {
         this.knurldService = knurldService;
@@ -62,7 +63,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
         v.findViewById(R.id.lock).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (context instanceof DropboxActivity) {
+                if (context instanceof DropboxActivity && knurldService.isUserReady) {
                     RecordWAVService recordWAVService = new RecordWAVService(context, v, knurldService);
                     dropboxItem.entry.contents.get(position).readOnly = (dropboxItem.entry.contents.get(position).readOnly == true) ? false : true;
                     if (dropboxItem.entry.contents.get(position).readOnly) {
@@ -73,10 +74,27 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
                     }
                     swipeLayout.close(true);
                 }
+                else {
+                    showErrorPopup(v);
+                }
             }
         });
 
         return v;
+    }
+
+    public void showErrorPopup(View view) {
+        View errorView = LayoutInflater.from(context).inflate(R.layout.knurld_loading_popup, null);
+        popupWindow = new PopupWindow(errorView, 500, 500);
+        popupWindow.setFocusable(true);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        popupWindow.dismiss();
+                    }
+                }, 3000);
     }
 
     @Override

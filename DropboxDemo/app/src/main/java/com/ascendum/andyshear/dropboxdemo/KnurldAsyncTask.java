@@ -205,6 +205,7 @@ public class KnurldAsyncTask {
                 writer.close();
 
             } else if (method.contains("enrollment") && urlStringParams != "") {
+                method = "setupEnrollment";
                 String boundary = "Nonce";
 
                 urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
