@@ -46,7 +46,6 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     private static final String FILE_PATH = "FILE_PATH";
 
     protected DropboxAPI<AndroidAuthSession> mDBApi;
-    public Context context;
 
     public ListView listView;
     public String folderPath;
@@ -84,7 +83,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
 
     private PopupWindow popupWindow;
     private PopupWindow errorWindow;
-
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,46 +101,23 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         final String knurldConsumer = intent.getStringExtra(KNURLD_CONSUMER);
         final String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
+
+        // Start KnurldService thread using StringExtras passed from intent if they exist
+        context = this;
         knurldVerification = this;
         knurldServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                knurldService = new KnurldService(knurldVerification, knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
+                knurldService = new KnurldService(knurldVerification, context, knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
             }
         });
 
         knurldServiceThread.start();
         isUserReady = false;
 
-//        getKnurldService();
 
 
-//        if (knurldToken == null) {
-//            knurldService = new KnurldService(this);
-//            knurldService.getToken();
-//        } else {
-//            knurldService = new KnurldService(this, knurldToken);
-//            knurldAccessToken = knurldToken;
-//            if (knurldApp != null) {
-//                knurldAppModel = new KnurldAppModel();
-//                knurldAppModel.appModelId = knurldApp;
-//            }
-//            if (knurldConsumer != null) {
-//                knurldConsumerModel = new KnurldConsumerModel();
-//                knurldConsumerModel.consumerModelId = knurldConsumer;
-//            }
-//            if (knurldVerification != null) {
-//                knurldVerificationModel = new KnurldVerificationModel();
-//                knurldVerificationModel.verificationId = knurldVerification;
-//            }
-//            if (knurldAnalysis != null) {
-//                knurldAnalysisModel = new KnurldAnalysisModel();
-//                knurldAnalysisModel.taskName = knurldAnalysis;
-//            }
-//        }
-
-
-
+        // Dropbox state management, need to refactor to DropboxService
         if (mDBApi == null) {
             AndroidAuthSession session = buildSession();
             mDBApi = new DropboxAPI<AndroidAuthSession>(session);
@@ -151,16 +127,13 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         lockedFiles = ((ArrayList<String>) LockedItems.getItems(this, "locked") == null) ? new ArrayList<String>() : (ArrayList<String>) LockedItems.getItems(this, "locked");
 
         if (mDBApi.getSession().isLinked() && filePathIntent == null) {
-            context = this;
             dropboxService = new DropboxService(mDBApi, this, "/");
 
         } else if (mDBApi.getSession().isLinked() && filePathIntent != null) {
             if (mDBApi.getSession().isLinked() && filePathIntent.equals("/")) {
-                context = this;
                 dropboxService = new DropboxService(mDBApi, this, "/");
 
             } else if (mDBApi.getSession().isLinked() && filePathIntent.startsWith("/")) {
-                context = this;
                 dropboxService = new DropboxService(mDBApi, this, filePathIntent);
                 dropboxService.getPath(mDBApi, this, filePathIntent);
             }

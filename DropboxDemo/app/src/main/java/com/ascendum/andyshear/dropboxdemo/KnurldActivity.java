@@ -42,6 +42,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
     public JSONObject intervals;
 
     public PopupWindow popupWindow;
+    private Context context;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,12 +51,13 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressSpinner);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.rgb(226, 132, 59), PorterDuff.Mode.MULTIPLY);
 
+        context = this;
         isUserReady = false;
         knurldVerification = this;
         knurldServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                knurldService = new KnurldService(knurldVerification);
+                knurldService = new KnurldService(knurldVerification, context);
             }
         });
 
@@ -64,7 +66,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
 
 
     public PopupWindow showLoading() {
-        View view = LayoutInflater.from(this).inflate(R.layout.activity_folder_swipe, null);
+        View view = LayoutInflater.from(this).inflate(R.layout.knurld_setup, null);
         View spinnerView = LayoutInflater.from(this).inflate(R.layout.loading_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
@@ -77,12 +79,13 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
     }
 
     public void showInstructions() {
-        View view = LayoutInflater.from(this).inflate(R.layout.activity_folder_swipe, null);
-        View spinnerView = LayoutInflater.from(this).inflate(R.layout.loading_popup, null);
+        View view = LayoutInflater.from(this).inflate(R.layout.knurld_setup, null);
+        View spinnerView = LayoutInflater.from(this).inflate(R.layout.instructions_popup, null);
 
 
         TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
-        textView.setText("Speak in order 3x:\n" + knurldService.knurldEnrollmentsModel.phrases);
+        String vocab = knurldService.appModelService.getVocab().toString();
+        textView.setText("Speak in order 3x:\n" + vocab);
 
         popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
@@ -94,7 +97,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
                     public void run() {
                         popupWindow.dismiss();
                     }
-                }, 3000);
+                }, 5000);
 
     }
 
@@ -160,6 +163,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
         popupWindow = showLoading();
         knurldService.startEnrollment();
         popupWindow.dismiss();
+        showInstructions();
     }
 
     public void updateKnurldEnrollment(View view) {
@@ -168,7 +172,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
         knurldService.enroll();
         popupWindow.dismiss();
 
-        showInstructions();
+
     }
 //
 //    public void getKnurldEnrollment(View view) {

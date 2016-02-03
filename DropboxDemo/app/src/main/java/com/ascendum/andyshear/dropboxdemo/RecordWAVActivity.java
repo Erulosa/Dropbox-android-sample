@@ -23,7 +23,7 @@ public class RecordWAVActivity extends Activity{
     private static final String AUDIO_RECORDER_FILE_EXT_WAV = ".wav";
     private static final String AUDIO_RECORDER_FOLDER = "AudioRecorder";
     private static final String AUDIO_RECORDER_TEMP_FILE = "record_temp.raw";
-    private static final int RECORDER_SAMPLERATE = 44100;
+    private static final int RECORDER_SAMPLERATE = 11025;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 

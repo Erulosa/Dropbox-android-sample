@@ -63,6 +63,8 @@ public class KnurldService implements AsyncKnurldResponse {
 
     public boolean isUserReady;
 
+    private Context context;
+
     public KnurldService() {
         response = this;
         isUserReady = false;
@@ -71,7 +73,8 @@ public class KnurldService implements AsyncKnurldResponse {
     }
 
 
-    public KnurldService(AsyncKnurldVerification verificationResponse) {
+    public KnurldService(AsyncKnurldVerification verificationResponse, Context context) {
+        this.context = context;
         response = this;
         this.resp = verificationResponse;
         isUserReady = false;
@@ -79,7 +82,8 @@ public class KnurldService implements AsyncKnurldResponse {
         setupKnurldUser();
     }
 
-    public KnurldService(AsyncKnurldVerification verificationResponse, String accessToken, String appModelId, String consumerId, String enrollmentId) {
+    public KnurldService(AsyncKnurldVerification verificationResponse, Context context, String accessToken, String appModelId, String consumerId, String enrollmentId) {
+        this.context = context;
         response = this;
         this.resp = verificationResponse;
         isUserReady = false;
@@ -515,6 +519,11 @@ public class KnurldService implements AsyncKnurldResponse {
                 for (int i = 0; i< words * 3; i++) {
                     try {
                         JSONObject j = phrases.getJSONObject(i);
+                        int start = j.getInt("start");
+                        int stop = j.getInt("stop");
+                        if ((j.getInt("stop") - j.getInt("start")) < 600) {
+//                            Toast.makeText(context, "Speak slower and try again", Toast.LENGTH_SHORT).show();
+                        }
                         j.put("phrase", vocab.get(i%5));
                         newPhrases.put(j);
                     } catch (JSONException e) {
