@@ -17,6 +17,7 @@ public class KnurldVerificationModel {
     private String verifivationWAV;
     public JSONArray intervals;
     public boolean verified;
+    public boolean failed;
     public boolean isActive;
     public String phrases;
     public JSONArray phrasesArray;
@@ -28,12 +29,15 @@ public class KnurldVerificationModel {
 
     public KnurldVerificationModel() {
         verified = false;
+        failed = false;
     }
 
     public KnurldVerificationModel(String developerId, String consumer, String appModel) {
         this.developerId = developerId;
         this.consumer = consumer;
         this.appModel = appModel;
+        this.verified = false;
+        this.failed = false;
     }
 
     public String getVerifivationWAV() {
@@ -85,6 +89,7 @@ public class KnurldVerificationModel {
                         }
                     }
                 }
+                failed = item.has("status") && item.getString("status").contains("failed");
                 verified = item.has("status") && item.getString("status").contains("completed");
                 if (!verified) {
                     isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
@@ -110,6 +115,7 @@ public class KnurldVerificationModel {
                     }
                 }
 
+                failed = jsonParam.has("status") && jsonParam.getString("status").contains("failed");
                 verified = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
                 if (!verified) {
                     isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");

@@ -80,7 +80,7 @@ public class RecordWAVService {
                         stopRecording();
                         ((DropboxActivity) context).lockItem(lock);
                     }
-                }, 6000);
+                }, 7000);
     }
 
     public void unLock(final String unlock) {
@@ -103,7 +103,7 @@ public class RecordWAVService {
                         stopRecording();
                         ((DropboxActivity) context).unlockItem(unlock);
                     }
-                }, 6000);
+                }, 7000);
     }
 
     private String getFilename(String fileName){

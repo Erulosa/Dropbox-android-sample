@@ -42,6 +42,10 @@ public class KnurldAppModelService extends KnurldResource {
         return this.knurldAppModel.getVocabulary();
     }
 
+    public int getVerificationLength() {
+        return this.knurldAppModel.getVerificationLength();
+    }
+
     public String getAppModelId() {
         return this.knurldAppModel.appModelId;
     }

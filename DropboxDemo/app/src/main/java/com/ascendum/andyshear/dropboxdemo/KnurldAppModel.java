@@ -54,6 +54,10 @@ public class KnurldAppModel {
         return vocabulary;
     }
 
+    public int getVerificationLength() {
+        return verificationLength;
+    }
+
     public void setVocabulary(JSONArray vocabulary) {
         this.vocabulary = vocabulary;
     }
@@ -77,6 +81,7 @@ public class KnurldAppModel {
                 JSONObject item = (JSONObject) items.get(items.length()-1);
                 String h = item.has("href") ? item.getString("href") : null;
                 JSONArray vocab = item.has("vocabulary") ? item.getJSONArray("vocabulary") : null;
+                verificationLength = item.has("verificationLength") ? item.getInt("verificationLength") : null;
                 if (h != null) {
                     setHref(h);
                 }
@@ -85,6 +90,7 @@ public class KnurldAppModel {
                 }
             } else {
                 String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
+                verificationLength = jsonParam.has("verificationLength") ? jsonParam.getInt("verificationLength") : null;
                 JSONArray vocab = jsonParam.has("vocabulary") ? jsonParam.getJSONArray("vocabulary") : null;
                 if (h != null) {
                     setHref(h);

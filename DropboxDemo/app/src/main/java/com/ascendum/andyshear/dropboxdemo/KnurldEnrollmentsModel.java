@@ -19,6 +19,8 @@ public class KnurldEnrollmentsModel {
     public JSONArray intervals;
     public JSONArray phrasesArray;
     public String phrases;
+    public boolean enrolled;
+    public boolean failed;
 
     public KnurldEnrollmentsModel() {
 
@@ -29,6 +31,8 @@ public class KnurldEnrollmentsModel {
     }
 
     public KnurldEnrollmentsModel(String developerId, String authorization, String consumer, String application) {
+        this.failed = false;
+        this.enrolled = false;
         this.developerId = developerId;
         this.authorization = authorization;
         this.consumer = consumer;
@@ -65,6 +69,8 @@ public class KnurldEnrollmentsModel {
                         }
                     }
                 }
+                failed = item.has("status") && item.getString("status").contains("failed");
+                enrolled = item.has("status") && item.getString("status").contains("completed");
                 intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
                 String h = item.has("href") ? item.getString("href") : null;
                 if (h != null) {
@@ -84,6 +90,8 @@ public class KnurldEnrollmentsModel {
                         }
                     }
                 }
+                enrolled = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
+                failed = jsonParam.has("status") && jsonParam.getString("status").contains("failed");
                 intervals = jsonParam.has("intervals") ? jsonParam.getJSONArray("intervals") : null;
                 String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
                 if (h != null) {

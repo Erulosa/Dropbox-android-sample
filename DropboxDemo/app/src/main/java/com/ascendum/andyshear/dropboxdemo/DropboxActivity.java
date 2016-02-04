@@ -209,6 +209,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             verificationItem = new VerificationItem();
             verificationItem.itemName = item;
             verificationItem.locked = true;
+            authenticateItem();
         }
         popupWindow.dismiss();
     }
@@ -240,6 +241,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             verificationItem = new VerificationItem();
             verificationItem.itemName = item;
             verificationItem.locked = false;
+            authenticateItem();
         }
         popupWindow.dismiss();
     }
@@ -278,9 +280,11 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         if (locked) {
             lockedFiles.remove(item);
             LockedItems.saveItems(this, "locked", lockedFiles);
+            Toast.makeText(context, "Item is Locked", Toast.LENGTH_SHORT).show();
         } else {
             lockedFiles.add(item);
             LockedItems.saveItems(this, "locked", lockedFiles);
+            Toast.makeText(context, "Item is Unlocked", Toast.LENGTH_SHORT).show();
         }
     }
 
