@@ -56,7 +56,6 @@ public class KnurldService implements AsyncKnurldResponse {
     public KnurldVerificationService verificationService;
 
     //MODELS
-//    public KnurldAppModel knurldAppModel;
     public KnurldConsumerModel knurldConsumerModel;
     public KnurldEnrollmentsModel knurldEnrollmentsModel;
     public KnurldVerificationModel knurldVerificationModel;
@@ -91,7 +90,6 @@ public class KnurldService implements AsyncKnurldResponse {
         if (accessToken != null) {
             CLIENT_TOKEN = accessToken;
             setupExistingKnurldUser();
-//            knurldAppModel = appModelId != null ? new KnurldAppModel(appModelId) : appModelService.indexAppModel();
             knurldConsumerModel = consumerId != null ? new KnurldConsumerModel(consumerId) : consumerService.indexConsumer();
             knurldEnrollmentsModel = enrollmentId != null ? new KnurldEnrollmentsModel(enrollmentId) : enrollmentService.indexEnrollment();
             createKnurldVerification();
@@ -127,7 +125,6 @@ public class KnurldService implements AsyncKnurldResponse {
         appModelService.index();
         knurldConsumerModel = consumerService.indexConsumer();
         knurldEnrollmentsModel = enrollmentService.indexEnrollment();
-//        knurldVerificationModel = verificationService.indexVerification();
     }
 
     public void setupExistingKnurldUser() {
@@ -139,10 +136,8 @@ public class KnurldService implements AsyncKnurldResponse {
     }
 
     public void isUserReady() {
-//        boolean modelReady = (knurldAppModel.appModelId != null);
         boolean consumerReady = (knurldConsumerModel.consumerModelId != null);
         boolean enrollmentReady = (knurldEnrollmentsModel.enrollmentId != null);
-//        boolean verificationReady = (knurldVerificationModel.activeVerification != null);
         if(appModelService.appModelReady() && consumerReady && enrollmentReady) {
             isUserReady = true;
             resp.processFinish("userReady", true);
@@ -158,7 +153,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
     public void createKnurldVerification() {
         String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + appModelService.getHref() + "\"}";
-//        String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + knurldAppModel.getHref() + "\"}";
         knurldVerificationModel = new KnurldVerificationModel();
         verificationService.createVerification(testVerification);
     }
@@ -175,7 +169,6 @@ public class KnurldService implements AsyncKnurldResponse {
         JSONObject enrollmentBody = new JSONObject();
         JSONArray phrases = knurldAnalysisModel.intervals;
         JSONArray vocab = appModelService.getVocab();
-//        JSONArray vocab = knurldAppModel.getVocabulary();
         for (int i = 0; i<phrases.length(); i++) {
             try {
                 JSONObject j = phrases.getJSONObject(i);
@@ -198,7 +191,6 @@ public class KnurldService implements AsyncKnurldResponse {
         JSONObject enrollmentBody = new JSONObject();
         JSONArray phrases = knurldAnalysisModel.intervals;
         JSONArray vocab = appModelService.getVocab();
-//        JSONArray vocab = knurldAppModel.getVocabulary();
         for (int i = 0; i<phrases.length(); i++) {
             try {
                 JSONObject j = phrases.getJSONObject(i);
@@ -212,10 +204,6 @@ public class KnurldService implements AsyncKnurldResponse {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-//        KnurldAsyncVerification kAV = new KnurldAsyncVerification();
-//        kAV.delegate = response;
-//        this.resp = response;
-//        kAV.execute("verify", enrollmentBody.toString());
     }
 
     public void knurldAnalysis(AsyncKnurldVerification response) {
@@ -232,7 +220,6 @@ public class KnurldService implements AsyncKnurldResponse {
         JSONObject enrollmentBody = new JSONObject();
         JSONArray phrases = knurldAnalysisModel.intervals;
         JSONArray vocab = appModelService.getVocab();
-//        JSONArray vocab = knurldAppModel.getVocabulary();
         for (int i = 0; i<phrases.length(); i++) {
             try {
                 JSONObject j = phrases.getJSONObject(i);
@@ -396,10 +383,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
     }
 
-
-
-
-
     public PopupWindow showLoading(PopupWindow popupWindow, View view, Context context) {
         View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
@@ -412,13 +395,8 @@ public class KnurldService implements AsyncKnurldResponse {
         return popupWindow;
     }
 
-
-
-
     public String startEnrollment() {
         final String[] response = {null};
-
-
 
         Thread t = new Thread(new Runnable() {
             @Override
@@ -446,9 +424,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
         return response[0];
     }
-
-
-
 
     public String startVerification() {
         final String[] response = {null};
@@ -479,7 +454,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
         return response[0];
     }
-
 
     public PopupWindow showLoading(View view, PopupWindow popupWindow, Context context) {
         View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
@@ -535,8 +509,6 @@ public class KnurldService implements AsyncKnurldResponse {
                 }
                 t.interrupt();
 
-
-
                 // Update enrollment, set phrases to intervals
                 JSONObject enrollmentBody = new JSONObject();
                 JSONArray phrases = knurldAnalysisModel.intervals;
@@ -552,7 +524,6 @@ public class KnurldService implements AsyncKnurldResponse {
                         int stop = j.getInt("stop");
                         if ((stop - start) < 600) {
                             validPhrases = false;
-//                            Toast.makeText(context, "Speak slower and try again", Toast.LENGTH_SHORT).show();
                         }
                         j.put("phrase", vocab.get(i%5));
                         newPhrases.put(j);
@@ -565,7 +536,6 @@ public class KnurldService implements AsyncKnurldResponse {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
 
                 // Check if all phrases are valid, if not, try recording enrollment again
                 if (validPhrases) {
@@ -616,9 +586,6 @@ public class KnurldService implements AsyncKnurldResponse {
                     }
                 }
 
-
-
-
                 try {
 
                     finalize();
@@ -629,22 +596,11 @@ public class KnurldService implements AsyncKnurldResponse {
         });
         enrollThread.start();
 
-
-
-//        View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
-//        ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
-//        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
-//
-//        PopupWindow popupWindow = new PopupWindow(spinnerView, 500, 500);
-//        popupWindow.setFocusable(true);
-//        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-
         while (enrollThread.isAlive() ) {
             String test = "";
         }
 
         enrollThread.interrupt();
-//        popupWindow.dismiss();
         boolean response1 = response[0] != null ? response[0].equals("failed") : true;
         boolean response2 = response[1] != null ? response[1].equals("failed") : true;
 
@@ -655,8 +611,6 @@ public class KnurldService implements AsyncKnurldResponse {
             return true;
         }
     }
-
-
 
     // Perform analysis and verification synchronously, returns when verification passes/fails
     public boolean verify() {
@@ -690,23 +644,6 @@ public class KnurldService implements AsyncKnurldResponse {
                     }
                     knurldAnalysisModel.buildFromResponse(analysisService.showAnalysis(knurldAnalysisModel.taskName)[1]);
                 }
-//                     t = new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//
-//                        }
-//                    });
-//                    t.start();
-//                    try {
-//                        t.sleep(500, 0);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    knurldAnalysisModel.buildFromResponse(analysisService.showAnalysis(knurldAnalysisModel.taskName)[1]);
-//                }
-//                t.interrupt();
-
-
 
                 // Update verification, set phrases to intervals
                 JSONObject enrollmentBody = new JSONObject();
@@ -715,7 +652,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
                 // Add phrases to intervals, accounting for 3x (15) repeated phrases
                 boolean validPhrases = true;
-
 
                 // Remove any intervals that are under 400ms
                 JSONArray editedPhrases = new JSONArray();
@@ -789,18 +725,6 @@ public class KnurldService implements AsyncKnurldResponse {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-//                            t = new Thread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//
-//                                }
-//                            });
-//                            t.start();
-//                            try {
-//                                t.sleep(500, 0);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
 
                             // Try to get verification, if it fails, restart analysis
                             response[1] = verificationService.show(knurldVerificationModel.verificationId)[1];
@@ -816,25 +740,11 @@ public class KnurldService implements AsyncKnurldResponse {
                                 knurldVerificationModel.buildFromResponse(response[1]);
                             }
                         }
-//                        t.interrupt();
                     }
                 }
-
-
-
-//                try {
-//                    finalize();
-//                } catch (Throwable throwable) {
-//                    throwable.printStackTrace();
-//                }
             }
         });
         verifyThread.start();
-
-
-//        while (verifyThread.isAlive() ) {
-//            String test = "";
-//        }
 
         try {
             verifyThread.join();
