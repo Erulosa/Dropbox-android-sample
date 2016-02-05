@@ -375,7 +375,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             } else if (type.startsWith("image") || type.startsWith("video")){
                 iconDownload.downloadThumb(path, fileName, mDBApi);
             } else {
-                iconDownload.setPlaceholder(path, fileName, mDBApi);
+//                iconDownload.setPlaceholder(path, fileName, mDBApi);
             }
 
             if (i+1 == dropboxService.dropboxItem.entry.contents.size()) {

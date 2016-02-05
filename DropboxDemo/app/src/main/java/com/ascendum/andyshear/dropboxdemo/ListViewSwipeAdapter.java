@@ -110,7 +110,10 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
             imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.folder));
         } else {
             File file = new File(path, "test"+ fileName +".jpeg");
-            imageView.setImageURI(Uri.fromFile(file));
+            Uri uri = Uri.fromFile(file);
+            if (uri != null) {
+                imageView.setImageURI(Uri.fromFile(file));
+            }
         }
     }
 
