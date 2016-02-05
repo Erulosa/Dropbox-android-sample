@@ -133,61 +133,8 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
     public void setKnurldAppModel(View view) {
         knurldService.createKnurldAppModel();
     }
-//
-//    public void getKnurldAppModel(View view) {
-//        if (knurldAppModel == null) {
-////            setKnurldAppModel(view);
-//            knurldAppModel = new KnurldAppModel();
-//            knurldService.indexAppModel();
-//        } else if (knurldAppModel.appModelId != null){
-//            knurldService.showAppModel(knurldAppModel.appModelId);
-//        }
-//    }
-//
-//    public void setKnurldConsumer(View view) {
-//        String testConsumer = "{\"username\":\"Andy_Shear\",\"gender\":\"M\",\"password\":\"pass\"}";
-//        if (knurldConsumerModel == null) {
-//            knurldConsumerModel = new KnurldConsumerModel();
-//            knurldService.createConsumer(testConsumer);
-//        } else if (knurldConsumerModel.getHref() != null){
-//            knurldService.updateConsumer(knurldConsumerModel.getHref(), testConsumer);
-//        }
-//    }
-//
-//    public void getKnurldConsumer(View view) {
-//        if (knurldConsumerModel == null) {
-//            knurldConsumerModel = new KnurldConsumerModel();
-//            knurldService.indexConsumer();
-//        } else if (knurldConsumerModel.consumerModelId != null){
-//            knurldService.showConsumer(knurldConsumerModel.consumerModelId);
-//        }
-//    }
-//
-//    public void setKnurldEndpointAnalysis(View view) {
-//        if (knurldAnalysisModel == null) {
-//            knurldAnalysisModel = new KnurldAnalysisModel();
-//        }
-//        String testEndpoint = "{\"filedata\":\"enrollment.wav\",\"words\":\"3\"}";
-//        knurldService.createEndpointAnalysis(testEndpoint);
-//    }
-//
-//    public void getKnurldEndpointAnalysis(View view) {
-//        if (knurldAnalysisModel == null) {
-//            knurldAnalysisModel = new KnurldAnalysisModel();
-//            String testEndpoint = "{\"filedata\":\"enrollment.wav\",\"words\":\"3\"}";
-//            knurldService.createEndpointAnalysis(testEndpoint);
-//        } else if (knurldAnalysisModel.taskName != null){
-//            knurldService.showEndpointAnalysis(knurldAnalysisModel.taskName);
-//        }
-//
-//    }
-//
+
     public void setKnurldEnrollment(View view) {
-//        knurldService.createKnurldEnrollment();
-//        AsyncPopup asyncPopup = new AsyncPopup();
-//        asyncPopup.delegate = this;
-//        asyncPopup.execute();
-//        View v = LayoutInflater.from(context).inflate(R.layout.knurld_setup, null);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -200,57 +147,11 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
     }
 
     public void updateKnurldEnrollment(View view) {
-//        knurldService.updateKnurldEnrollment();
         popupWindow = showLoading();
         knurldService.enroll();
         popupWindow.dismiss();
-
-
     }
-//
-//    public void getKnurldEnrollment(View view) {
-//        if (knurldEnrollmentsModel == null) {
-//            knurldEnrollmentsModel = new KnurldEnrollmentsModel();
-//            knurldService.indexEnrollment();
-//        } else if (knurldEnrollmentsModel.enrollmentId != null){
-//            knurldService.showEnrollment(knurldEnrollmentsModel.enrollmentId);
-//        }
-//    }
-//
-//    public void setKnurldVerification(View view) {
-//        String testVerification = "{\"consumer\":\"" + knurldConsumerModel.getHref() + "\",\"application\":\"" + knurldAppModel.getHref() + "\"}";
-//        if (knurldVerificationModel == null) {
-//            knurldVerificationModel = new KnurldVerificationModel();
-//            knurldService.createVerification(testVerification);
-//        } else if (knurldVerificationModel.verificationId != null){
-//            JSONObject enrollmentBody = new JSONObject();
-//            JSONArray phrases = knurldAnalysisModel.intervals;
-//            JSONArray vocab = knurldAppModel.getVocabulary();
-//            for (int i = 0; i<phrases.length(); i++) {
-//                try {
-//                    JSONObject j = phrases.getJSONObject(i);
-//                    j.put("phrase", vocab.get(i));
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            try {
-//                enrollmentBody.put("intervals", phrases);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//            knurldService.updateVerification(knurldVerificationModel.getHref(), enrollmentBody.toString());
-//        }
-//    }
-//
-//    public void getKnurldVerification(View view) {
-//        if (knurldVerificationModel == null) {
-//            knurldVerificationModel = new KnurldVerificationModel();
-//            knurldService.indexVerification();
-//        } else if (knurldVerificationModel.verificationId != null){
-//            knurldService.showVerification(knurldVerificationModel.verificationId);
-//        }
-//    }
+
 
     @Override
     public void processFinish(String call, String method, String result) {
