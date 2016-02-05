@@ -78,7 +78,7 @@ public class RecordWAVService {
                 new Runnable() {
                     public void run() {
                         stopRecording();
-                        ((DropboxActivity) context).lockItem(lock);
+                        ((DropboxActivity) context).toggleLockOn(lock, "Verifying…", true);
                     }
                 }, 7000);
     }
@@ -101,7 +101,7 @@ public class RecordWAVService {
                 new Runnable() {
                     public void run() {
                         stopRecording();
-                        ((DropboxActivity) context).unlockItem(unlock);
+                        ((DropboxActivity) context).toggleLockOn(unlock, "Verifying…", false);
                     }
                 }, 7000);
     }

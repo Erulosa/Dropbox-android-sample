@@ -356,7 +356,7 @@ public class KnurldAPIResource {
 
                 Log.d("ResponseMessage", sb.toString());
             } else{
-                method = "verificationFailed";
+                method = "failed";
                 Log.d("ResponseMessage", urlConnection.getResponseMessage());
             }
 

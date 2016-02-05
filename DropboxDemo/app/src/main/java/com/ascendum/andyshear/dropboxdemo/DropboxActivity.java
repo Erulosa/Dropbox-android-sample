@@ -1,19 +1,24 @@
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.Message;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
@@ -84,6 +89,8 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     private PopupWindow popupWindow;
     private PopupWindow errorWindow;
     private Context context;
+
+    private MessageHandler messageHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,80 +187,61 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         LockedItems.saveItems(this, "locked", lockedFiles);
     }
 
-    public void lockItem(String item) {
-        View view = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
-        runOnUiThread(new Runnable() {
+    public void toggleLockOn(final String item, String message, final Boolean locked) {
+
+        Activity parent = (Activity) context;
+        final View view = LayoutInflater.from(parent).inflate(R.layout.activity_folder_swipe, null);
+
+        final PopupWindow loadingWindow = showLoadingPopup(view);
+//
+
+//        CharSequence text = message;
+//        int duration = Toast.LENGTH_LONG;
+//        Toast t = Toast.makeText(parent, text, duration);
+//        t.show();
+
+
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                View view = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
-                View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
-                ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
-                progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+                boolean verified = false;
+                verified = knurldService.verify();
 
-                popupWindow = new PopupWindow(spinnerView, 500, 500);
-                popupWindow.setFocusable(true);
-                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+                if (!verified) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadingWindow.dismiss();
+                            showErrorPopup(view);
+                        }
+                    });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadingWindow.dismiss();
+                            verificationItem = new VerificationItem();
+                            verificationItem.itemName = item;
+                            verificationItem.locked = locked;
+                            authenticateItem();
+                        }
+                    });
+
+                }
             }
-        });
+        }).start();
 
-
-
-
-//        knurldService.knurldAnalysis(this);
-//        knurldService.startVerification();
-//        showLoadingPopup(view);
-        boolean verified = knurldService.verify(view, context);
-        if (!verified) {
-            showErrorPopup(view);
-        } else {
-            verificationItem = new VerificationItem();
-            verificationItem.itemName = item;
-            verificationItem.locked = true;
-            authenticateItem();
-        }
-        popupWindow.dismiss();
     }
 
-    public void unlockItem(String item) {
-        View view = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                View view = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
-                View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
-                ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
-                progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
-
-                popupWindow = new PopupWindow(spinnerView, 500, 500);
-                popupWindow.setFocusable(true);
-                popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-            }
-        });
-
-
-//        knurldService.knurldAnalysis(this);
-//        knurldService.startVerification();
-//        showLoadingPopup(view);
-        boolean verified = knurldService.verify(view, context);
-        if (!verified) {
-            showErrorPopup(view);
-        } else {
-            verificationItem = new VerificationItem();
-            verificationItem.itemName = item;
-            verificationItem.locked = false;
-            authenticateItem();
-        }
-        popupWindow.dismiss();
-    }
-
-    public void showLoadingPopup(View view) {
-        View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
+    public PopupWindow showLoadingPopup(View view) {
+        View spinnerView = LayoutInflater.from((Activity) context).inflate(R.layout.loading_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
 
-        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        PopupWindow popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        return popupWindow;
     }
 
     public void showErrorPopup(View view) {
@@ -265,14 +253,12 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
-//                        popupWindow.dismiss();
                         errorWindow.dismiss();
                     }
                 }, 3000);
     }
 
     public void authenticateItem() {
-        popupWindow.dismiss();
         setItem(verificationItem.locked, verificationItem.itemName);
     }
 
@@ -389,7 +375,7 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             } else if (type.startsWith("image") || type.startsWith("video")){
                 iconDownload.downloadThumb(path, fileName, mDBApi);
             } else {
-                iconDownload.setPlaceholder(path, mDBApi);
+                iconDownload.setPlaceholder(path, fileName, mDBApi);
             }
 
             if (i+1 == dropboxService.dropboxItem.entry.contents.size()) {
@@ -415,6 +401,23 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
         }
 
 
+    }
+
+    public class MessageHandler extends android.os.Handler {
+
+        public static final int MESSAGE_CODE = 2;
+        private LoadingPopup loadingPopup;
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == MESSAGE_CODE) {
+                loadingPopup = new LoadingPopup(context, msg);
+            }
+        }
+
+        public PopupWindow getPopup() {
+            return loadingPopup.getPopupWindow();
+        }
     }
     
 }

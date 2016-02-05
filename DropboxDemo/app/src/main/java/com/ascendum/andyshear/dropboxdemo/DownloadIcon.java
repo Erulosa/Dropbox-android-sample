@@ -1,8 +1,11 @@
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Environment;
 
@@ -49,10 +52,10 @@ public class DownloadIcon {
         return null;
     }
 
-    public Bitmap setPlaceholder(String path, DropboxAPI api) {
+    public Bitmap setPlaceholder(String path, String fileName, DropboxAPI api) {
         mDBApi = api;
-        DocLoadTask docLoadTask = new DocLoadTask(path);
-        docLoadTask.execute();
+        PlaceholderLoadTask placeholderLoadTask = new PlaceholderLoadTask(path, fileName);
+        placeholderLoadTask.execute();
         return null;
     }
 
@@ -88,24 +91,43 @@ public class DownloadIcon {
         @Override
         protected void onPostExecute(Bitmap result) {
             super.onPostExecute(result);
-            result = Bitmap.createScaledBitmap(result, result.getWidth(), result.getHeight(), false);
-            FileOutputStream out;
-            String filePath = Environment.getExternalStorageDirectory().toString();
-            File file = new File(filePath, "test"+fileName+".jpeg");
-            try {
-                out = new FileOutputStream(file);
-                result.compress(Bitmap.CompressFormat.JPEG, 75, out);
+            if (result == null) {
+                Bitmap image = null;
+                image = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
+                result = Bitmap.createScaledBitmap(image, 250, 250, false);
+                FileOutputStream out;
+                String filePath = Environment.getExternalStorageDirectory().toString();
+                File file = new File(filePath, "test"+fileName+".jpeg");
+                try {
+                    out = new FileOutputStream(file);
+                    result.compress(Bitmap.CompressFormat.JPEG, 75, out);
 
-                out.flush();
-                out.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                    out.flush();
+                    out.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                result = Bitmap.createScaledBitmap(result, result.getWidth(), result.getHeight(), false);
+                FileOutputStream out;
+                String filePath = Environment.getExternalStorageDirectory().toString();
+                File file = new File(filePath, "test"+fileName+".jpeg");
+                try {
+                    out = new FileOutputStream(file);
+                    result.compress(Bitmap.CompressFormat.JPEG, 75, out);
+
+                    out.flush();
+                    out.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-
-
-            done.processFinish("images", "test"+fileName+".jpeg");
+            done.processFinish("images", "test"+fileName+ ".jpeg");
 
         }
     }
@@ -191,9 +213,11 @@ public class DownloadIcon {
 
     public class PlaceholderLoadTask extends AsyncTask<Void, Void, Bitmap> {
         public String path;
+        public String fileName;
 
-        public PlaceholderLoadTask(String path) {
+        public PlaceholderLoadTask(String path, String fileName) {
             this.path = path;
+            this.fileName = fileName;
         }
 
         @Override
@@ -208,12 +232,14 @@ public class DownloadIcon {
         @Override
         protected void onPostExecute(Bitmap result) {
             super.onPostExecute(result);
+            Bitmap image = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
+            result = Bitmap.createScaledBitmap(image, 250, 250, false);
             FileOutputStream out;
             String filePath = Environment.getExternalStorageDirectory().toString();
-            File file = new File(filePath, path+".png");
+            File file = new File(filePath, "test"+fileName+".jpeg");
             try {
                 out = new FileOutputStream(file);
-                result.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                result.compress(Bitmap.CompressFormat.JPEG, 75, out);
 
                 out.flush();
                 out.close();
@@ -222,9 +248,8 @@ public class DownloadIcon {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            done.processFinish("images", "test" + fileName + ".jpeg");
 
-
-            done.processFinish("images", path+".png");
         }
     }
 

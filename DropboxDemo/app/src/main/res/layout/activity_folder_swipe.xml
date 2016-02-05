@@ -7,6 +7,7 @@
     android:layout_height="wrap_content">
 
     <LinearLayout
+        android:id="@+id/layoutId"
         android:layout_width="wrap_content"
         android:layout_height="80dp"
         android:background="#FF5534"
