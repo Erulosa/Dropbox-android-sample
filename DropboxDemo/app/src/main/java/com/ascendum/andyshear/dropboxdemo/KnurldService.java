@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.content.Context;
@@ -37,9 +41,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.logging.Handler;
 
-/**
- * Created by andyshear on 1/11/16.
- */
 public class KnurldService implements AsyncKnurldResponse {
     private static String CLIENT_TOKEN;
 
@@ -491,23 +492,14 @@ public class KnurldService implements AsyncKnurldResponse {
 
 
                 // Poll for analysis to finish
-                Thread t = null;
                 while (knurldAnalysisModel.intervals == null) {
-                    t = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                        }
-                    });
-                    t.start();
                     try {
-                        t.sleep(500, 0);
+                        Thread.sleep(500, 0);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     knurldAnalysisModel.buildFromResponse(analysisService.showAnalysis(knurldAnalysisModel.taskName)[1]);
                 }
-                t.interrupt();
 
                 // Update enrollment, set phrases to intervals
                 JSONObject enrollmentBody = new JSONObject();
@@ -554,15 +546,8 @@ public class KnurldService implements AsyncKnurldResponse {
 
                         // Poll for verification to finish
                         while (!knurldEnrollmentsModel.enrolled && knurldAnalysisModel != null && !failed[0]) {
-                            t = new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });
-                            t.start();
                             try {
-                                t.sleep(500, 0);
+                                Thread.sleep(500, 0);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -582,7 +567,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
                             }
                         }
-                        t.interrupt();
                     }
                 }
 
