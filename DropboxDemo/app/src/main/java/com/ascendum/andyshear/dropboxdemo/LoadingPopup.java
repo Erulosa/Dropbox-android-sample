@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
@@ -12,9 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 
-/**
- * Created by andyshear on 2/5/16.
- */
 public class LoadingPopup {
 
     private Context context;

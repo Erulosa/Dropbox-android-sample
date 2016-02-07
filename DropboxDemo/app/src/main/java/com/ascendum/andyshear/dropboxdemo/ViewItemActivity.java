@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
@@ -24,9 +28,6 @@ import com.dropbox.client2.session.AppKeyPair;
 
 import java.io.File;
 
-/**
- * Created by andyshear on 1/5/16.
- */
 public class ViewItemActivity extends Activity implements AsyncResponse{
 
     final static private String APP_KEY = "d3zx13rhlc2jbpr";

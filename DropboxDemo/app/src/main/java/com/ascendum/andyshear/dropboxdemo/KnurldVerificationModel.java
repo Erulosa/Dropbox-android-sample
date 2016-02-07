@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import org.json.JSONArray;
@@ -7,9 +11,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Dictionary;
 
-/**
- * Created by andyshear on 1/11/16.
- */
 public class KnurldVerificationModel {
     private String developerId;
     private String consumer;

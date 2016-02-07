@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
@@ -35,9 +39,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Created by andyshear on 12/21/15.
- */
 public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnurldVerification{
 
     final static private String APP_KEY = "d3zx13rhlc2jbpr";

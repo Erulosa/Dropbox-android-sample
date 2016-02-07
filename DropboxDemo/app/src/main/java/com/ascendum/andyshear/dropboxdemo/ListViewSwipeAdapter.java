@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.content.Context;
@@ -19,9 +23,6 @@ import com.daimajia.swipe.adapters.BaseSwipeAdapter;
 
 import java.io.File;
 
-/**
- * Created by andyshear on 1/8/16.
- */
 public class ListViewSwipeAdapter extends BaseSwipeAdapter {
 
     private Context context;

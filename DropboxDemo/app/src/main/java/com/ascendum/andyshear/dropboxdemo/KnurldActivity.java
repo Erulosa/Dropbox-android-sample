@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
@@ -23,9 +27,6 @@ import org.json.JSONObject;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-/**
- * Created by andyshear on 1/12/16.
- */
 public class KnurldActivity extends Activity implements AsyncKnurldResponse, AsyncKnurldVerification, AsyncMessage {
 
     public KnurldService knurldService;

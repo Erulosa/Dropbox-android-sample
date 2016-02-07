@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.os.Environment;
@@ -16,9 +20,6 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/**
- * Created by andyshear on 2/1/16.
- */
 public class KnurldAPIResource {
 
     private static final String CLIENT_ID = "EGVYDlI9Xgwhtd7GBvZsTjIPAmTjVxMR";

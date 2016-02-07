@@ -1,11 +1,12 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 
 import org.json.JSONArray;
 
-/**
- * Created by andyshear on 1/24/16.
- */
 public class KnurldAppModelService extends KnurldResource {
 
     private KnurldAppModel knurldAppModel;

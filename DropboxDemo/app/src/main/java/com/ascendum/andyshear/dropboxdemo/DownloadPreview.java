@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.content.Context;
@@ -15,9 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-/**
- * Created by andyshear on 1/6/16.
- */
 public class DownloadPreview {
     private DropboxAPI<AndroidAuthSession> mDBApi;
     public ViewItemActivity done;

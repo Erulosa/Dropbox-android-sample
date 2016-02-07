@@ -1,3 +1,7 @@
+// Copyright 2016 Intellisis Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file
 package com.ascendum.andyshear.dropboxdemo;
 
 import android.app.Activity;
@@ -13,9 +17,6 @@ import android.widget.LinearLayout;
 
 import java.io.IOException;
 
-/**
- * Created by andyshear on 1/8/16.
- */
 public class AudioRecordTest extends Activity {
     private static String mFileName = null;
 
