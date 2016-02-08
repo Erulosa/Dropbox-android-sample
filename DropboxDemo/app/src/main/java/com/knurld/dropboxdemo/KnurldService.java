@@ -175,7 +175,7 @@ public class KnurldService implements AsyncKnurldResponse {
 
         kAV.execute("verify", prepareAnalysisJSON().toString());
     }
-    
+
     private class KnurldAsyncVerification extends AsyncTask<String, String, String[]> implements AsyncKnurldResponse {
         public AsyncKnurldVerification delegate = null;
         @Override
@@ -203,9 +203,7 @@ public class KnurldService implements AsyncKnurldResponse {
 
         @Override
         public void processFinish(String call, String method, String output) {
-
             switch (method) {
-
                 case "endpointAnalysis" :
                     knurldAnalysisModel.buildFromResponse(output);
                     boolean analysis = (knurldAnalysisModel.intervals == null) ? false : true;
@@ -225,15 +223,8 @@ public class KnurldService implements AsyncKnurldResponse {
     public boolean isAnalysisDone() {
         boolean analysis = (knurldAnalysisModel.intervals == null) ? false : true;
         if (!analysis) {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                }
-            });
-            t.start();
             try {
-                t.sleep(1000, 0);
+                Thread.sleep(1000, 0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -244,15 +235,8 @@ public class KnurldService implements AsyncKnurldResponse {
 
     public boolean isVerificationFinished() {
         if (!knurldVerificationModel.verified && knurldAnalysisModel != null) {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                }
-            });
-            t.start();
             try {
-                t.sleep(1000, 0);
+                Thread.sleep(1000, 0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -555,7 +539,6 @@ public class KnurldService implements AsyncKnurldResponse {
 
 
                 // Poll for analysis to finish
-                Thread t = null;
                 while (knurldAnalysisModel.intervals == null) {
                     try {
                         Thread.sleep(500);
@@ -622,7 +605,6 @@ public class KnurldService implements AsyncKnurldResponse {
                 }
 
                 // Check if all phrases are valid, if not, try recording enrollment again
-                System.out.println("VALID PHRASRD       " + validPhrases);
                 if (validPhrases) {
 
                     // Try to update verification, if it fails, restart analysis
