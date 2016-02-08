@@ -141,82 +141,41 @@ public class KnurldService implements AsyncKnurldResponse {
         enrollmentService.createEnrollment(testEnrollment);
     }
 
+    protected JSONObject prepareAnalysisJSON() {
+        JSONObject enrollmentBody = new JSONObject();
+        JSONArray phrases = knurldAnalysisModel.intervals;
+        JSONArray vocab = appModelService.getVocab();
+
+        for (int i = 0; i<phrases.length(); i++) {
+            try {
+                JSONObject j = phrases.getJSONObject(i);
+                j.put("phrase", vocab.get(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            enrollmentBody.put("intervals", phrases);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return enrollmentBody;
+    }
+
     public void updateKnurldEnrollment() {
-
-
-        JSONObject enrollmentBody = new JSONObject();
-        JSONArray phrases = knurldAnalysisModel.intervals;
-        JSONArray vocab = appModelService.getVocab();
-        for (int i = 0; i<phrases.length(); i++) {
-            try {
-                JSONObject j = phrases.getJSONObject(i);
-                j.put("phrase", vocab.get(i));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            enrollmentBody.put("intervals", phrases);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        enrollmentService.updateEnrollment(knurldEnrollmentsModel.enrollmentId, enrollmentBody.toString());
-    }
-
-    public void knurldEnroll(AsyncKnurldVerification response) {
-
-
-        JSONObject enrollmentBody = new JSONObject();
-        JSONArray phrases = knurldAnalysisModel.intervals;
-        JSONArray vocab = appModelService.getVocab();
-        for (int i = 0; i<phrases.length(); i++) {
-            try {
-                JSONObject j = phrases.getJSONObject(i);
-                j.put("phrase", vocab.get(i));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            enrollmentBody.put("intervals", phrases);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void knurldAnalysis(AsyncKnurldVerification response) {
-        String testEndpoint = "{\"filedata\":\"verification.wav\",\"words\":\"3\"}";
-        KnurldAsyncVerification kAV = new KnurldAsyncVerification();
-        kAV.delegate = response;
-        this.resp = response;
-        kAV.execute("analysisStart", testEndpoint);
+        enrollmentService.updateEnrollment(knurldEnrollmentsModel.enrollmentId, prepareAnalysisJSON().toString());
     }
 
     public void knurldVerify(AsyncKnurldVerification response) {
-
-
-        JSONObject enrollmentBody = new JSONObject();
-        JSONArray phrases = knurldAnalysisModel.intervals;
-        JSONArray vocab = appModelService.getVocab();
-        for (int i = 0; i<phrases.length(); i++) {
-            try {
-                JSONObject j = phrases.getJSONObject(i);
-                j.put("phrase", vocab.get(i));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            enrollmentBody.put("intervals", phrases);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
         KnurldAsyncVerification kAV = new KnurldAsyncVerification();
         kAV.delegate = response;
         this.resp = response;
-        kAV.execute("verify", enrollmentBody.toString());
-    }
 
+        kAV.execute("verify", prepareAnalysisJSON().toString());
+    }
+    
     private class KnurldAsyncVerification extends AsyncTask<String, String, String[]> implements AsyncKnurldResponse {
         public AsyncKnurldVerification delegate = null;
         @Override
