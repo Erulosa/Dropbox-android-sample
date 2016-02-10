@@ -1,4 +1,4 @@
-package com.ascendum.andyshear.dropboxdemo;
+package com.knurld.dropboxdemo;
 
 import org.junit.Test;
 
