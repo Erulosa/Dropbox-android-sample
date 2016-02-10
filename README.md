@@ -1,7 +1,4 @@
 # demo-dropbox
-
-
-# demo-dropbox
 Sample Android application using [knurd.io api](https://developer.knurld.io)
 
 ## Prerequisites
