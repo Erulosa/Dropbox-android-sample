@@ -1,25 +1,50 @@
-// Copyright 2016 Intellisis Inc.  All rights reserved.
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file
-package com.knurld.dropboxdemo;
+package com.knurld.dropboxdemo.service;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 
+import com.knurld.dropboxdemo.AsyncKnurldResponse;
+import com.knurld.dropboxdemo.AsyncKnurldVerification;
+import com.knurld.dropboxdemo.KnurldAnalysisModel;
+import com.knurld.dropboxdemo.KnurldAnalysisService;
+import com.knurld.dropboxdemo.KnurldAppModelService;
+import com.knurld.dropboxdemo.KnurldAsyncTask;
+import com.knurld.dropboxdemo.KnurldConsumerModel;
+import com.knurld.dropboxdemo.KnurldConsumerService;
+import com.knurld.dropboxdemo.KnurldEnrollmentService;
+import com.knurld.dropboxdemo.KnurldEnrollmentsModel;
+import com.knurld.dropboxdemo.KnurldUtility;
+import com.knurld.dropboxdemo.KnurldVerificationModel;
+import com.knurld.dropboxdemo.KnurldVerificationService;
+import com.knurld.dropboxdemo.R;
+import com.knurld.dropboxdemo.model.AppModel;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+/**
+ * Created by andyshear on 2/15/16.
+ */
 public class KnurldService implements AsyncKnurldResponse {
     private static String CLIENT_TOKEN;
+    private static final String CLIENT_ID = "EGVYDlI9Xgwhtd7GBvZsTjIPAmTjVxMR";
+    private static final String CLIENT_SECRET = "e7yCrwbBeOzdholu";
 
 
     private AsyncKnurldResponse response;
@@ -44,65 +69,80 @@ public class KnurldService implements AsyncKnurldResponse {
     private Context context;
 
     public KnurldService() {
-        response = this;
-        isUserReady = false;
-        getToken();
-        setupKnurldUser();
-    }
+        final String[] token = {null};
+        Thread tokenThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                token[0] = getAccessToken();
+            }
+        });
+        tokenThread.start();
 
-
-    public KnurldService(AsyncKnurldVerification verificationResponse, Context context) {
-        this.context = context;
-        response = this;
-        this.resp = verificationResponse;
-        isUserReady = false;
-        getToken();
-        setupKnurldUser();
-    }
-
-    public KnurldService(AsyncKnurldVerification verificationResponse, Context context, String accessToken, String appModelId, String consumerId, String enrollmentId) {
-        this.context = context;
-        response = this;
-        this.resp = verificationResponse;
-        isUserReady = false;
-        if (accessToken != null) {
-            CLIENT_TOKEN = accessToken;
-            setupExistingKnurldUser();
-            knurldConsumerModel = consumerId != null ? new KnurldConsumerModel(consumerId) : consumerService.indexConsumer();
-            knurldEnrollmentsModel = enrollmentId != null ? new KnurldEnrollmentsModel(enrollmentId) : enrollmentService.indexEnrollment();
-            createKnurldVerification();
-        } else {
-            getToken();
-            setupKnurldUser();
+        try {
+            tokenThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        CLIENT_TOKEN = token[0] == null ? "failed" : token[0];
     }
 
-    public KnurldService(AsyncKnurldResponse response, String token) {
-        this.response = response;
-
-        isUserReady = false;
+    public KnurldService(String token) {
         CLIENT_TOKEN = token;
-        setupKnurldUser();
     }
 
     public String getAccessToken(){
+        return CLIENT_TOKEN == null ? getToken() : CLIENT_TOKEN;
+    }
+
+    public String getToken(){
+        StringBuilder sb = new StringBuilder();
+        InputStream in = null;
+        String urlString = "https://api.knurld.io/oauth/client_credential/accesstoken?grant_type=client_credentials";
+        String credentials = "client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET;
+
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setDoOutput(true);
+            urlConnection.setDoInput(true);
+            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            urlConnection.setRequestMethod("POST");
+            urlConnection.connect();
+
+            OutputStreamWriter out = new OutputStreamWriter(urlConnection.getOutputStream());
+            out.write(credentials);
+            out.flush();
+            out.close();
+
+            int HttpResult = urlConnection.getResponseCode();
+            if (HttpResult == HttpURLConnection.HTTP_OK){
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getInputStream(),"utf-8"));
+                String line = null;
+                while ((line = br.readLine()) != null) {
+
+                    sb.append(line);
+                }
+                JSONObject jsonResponse = new JSONObject(sb.toString());
+                CLIENT_TOKEN = jsonResponse.getString("access_token");
+                br.close();
+
+                System.out.println("" + sb.toString());
+                System.out.println("TOKEN " + CLIENT_TOKEN);
+            } else{
+                System.out.println(urlConnection.getResponseMessage());
+            }
+
+        } catch (Exception e) {
+            Log.d("Error", e.getMessage());
+            return e.getMessage();
+        }
         return CLIENT_TOKEN;
     }
 
-    public void getToken(){
-        knurldAsync = new KnurldAsyncTask(response, KnurldUtility.ACCESS_TOKEN, "ACCESS_TOKEN", null, null);
-    }
-
     public void setupKnurldUser() {
-        appModelService = (appModelService == null) ? new KnurldAppModelService(response) : appModelService;
-        consumerService = (consumerService == null) ? new KnurldConsumerService(response) : consumerService;
-        analysisService = (analysisService == null) ? new KnurldAnalysisService(response) : analysisService;
-        enrollmentService = (enrollmentService == null) ? new KnurldEnrollmentService(response) : enrollmentService;
-        verificationService = (verificationService == null) ? new KnurldVerificationService(response) : verificationService;
-
-        appModelService.index();
-        knurldConsumerModel = consumerService.indexConsumer();
-        knurldEnrollmentsModel = enrollmentService.indexEnrollment();
+        AppModel appModel = new AppModel();
+        appModel.index();
     }
 
     public void setupExistingKnurldUser() {
@@ -644,4 +684,6 @@ public class KnurldService implements AsyncKnurldResponse {
         }
         return knurldVerificationModel.verified;
     }
+
+
 }

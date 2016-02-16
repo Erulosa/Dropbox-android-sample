@@ -51,6 +51,7 @@ public class DropboxService{
             DropboxItem dropboxItem = new DropboxItem();
             try {
                 dropboxItem.entry = mDBApi.metadata(path, 15, null, true, null);
+                mDBApi.accountInfo();
 
             } catch (DropboxException e) {
                 e.printStackTrace();
@@ -63,7 +64,4 @@ public class DropboxService{
             delegate.processFinish(dropboxItem);
         }
     }
-
-
-
 }

@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
 
                 String accessToken = mDBApi.getSession().getOAuth2AccessToken();
 
+
                 SharedPreferences prefs = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
                 SharedPreferences.Editor edit = prefs.edit();
                 edit.putString(ACCESS_KEY_NAME, "oauth2:");

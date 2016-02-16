@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
 import java.util.ArrayList;
@@ -36,6 +37,8 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     private static final String ACCOUNT_PREFS_NAME = "prefs";
     private static final String ACCESS_KEY_NAME = "ACCESS_KEY";
     private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
+
+    private static final String DROPBOX_UID = "DROPBOX_UID";
 
     private static final String FILE_PATH = "FILE_PATH";
 
@@ -114,9 +117,11 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
 
 
         // Dropbox state management, need to refactor to DropboxService
+        String username = null;
         if (mDBApi == null) {
             AndroidAuthSession session = buildSession();
             mDBApi = new DropboxAPI<AndroidAuthSession>(session);
+            username = getDropboxUsername();
         }
 
         String filePathIntent = intent.getStringExtra(FILE_PATH);
@@ -370,6 +375,40 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
             if (i+1 == dropboxService.dropboxItem.entry.contents.size()) {
                 iconDownload.finish();
             }
+        }
+    }
+
+    public String getDropboxUsername() {
+        String dbx_uid = null;
+        SharedPreferences preferences = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
+        dbx_uid = preferences.getString(DROPBOX_UID, null);
+        SharedPreferences.Editor edit = preferences.edit();
+
+        if (dbx_uid == null) {
+            final DropboxAPI.Account[] account = new DropboxAPI.Account[1];
+            Thread dbxThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        account[0] = mDBApi.accountInfo();
+                    } catch (DropboxException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            dbxThread.start();
+            try {
+                dbxThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            edit.putString(DROPBOX_UID, account[0].email);
+            edit.commit();
+            return account[0].email;
+        } else {
+            edit.putString(DROPBOX_UID, dbx_uid);
+            edit.commit();
+            return dbx_uid;
         }
     }
 
