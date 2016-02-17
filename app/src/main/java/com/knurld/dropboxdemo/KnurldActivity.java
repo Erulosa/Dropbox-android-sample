@@ -20,22 +20,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.knurld.dropboxdemo.service.*;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class KnurldActivity extends Activity implements AsyncKnurldResponse, AsyncKnurldVerification, AsyncMessage {
+public class KnurldActivity extends Activity implements AsyncMessage {
 
-    public KnurldService knurldService;
-    public KnurldAppModel knurldAppModel;
-    public KnurldConsumerModel knurldConsumerModel;
-    public KnurldEnrollmentsModel knurldEnrollmentsModel;
-    public KnurldVerificationModel knurldVerificationModel;
-    public KnurldAnalysisModel knurldAnalysisModel;
-
-
-    public AsyncKnurldVerification knurldVerification;
-
+    public com.knurld.dropboxdemo.service.KnurldService knurldService;
 
     public Thread knurldServiceThread;
 
@@ -56,15 +49,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
 
         context = this;
         isUserReady = false;
-        knurldVerification = this;
-        knurldServiceThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                knurldService = new KnurldService(knurldVerification, context);
-            }
-        });
 
-        knurldServiceThread.start();
     }
 
 
@@ -87,7 +72,7 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
 
 
         TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
-        String vocab = knurldService.appModelService.getVocab().toString();
+        String vocab = knurldService.getAppModel().getVocabulary().toString();
         textView.setText("Speak in order 3x:\n" + vocab);
 
         popupWindow = new PopupWindow(spinnerView, 500, 500);
@@ -128,10 +113,6 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
         startActivity(intent);
     }
 
-    public void setKnurldAppModel(View view) {
-        knurldService.createKnurldAppModel();
-    }
-
     public void setKnurldEnrollment(View view) {
         runOnUiThread(new Runnable() {
             @Override
@@ -139,65 +120,17 @@ public class KnurldActivity extends Activity implements AsyncKnurldResponse, Asy
                 popupWindow = showLoading();
             }
         });
-        knurldService.startEnrollment();
+        knurldService.setupKnurldEnrollment();
         popupWindow.dismiss();
         showInstructions();
     }
 
     public void updateKnurldEnrollment(View view) {
         popupWindow = showLoading();
-        knurldService.enroll();
+        knurldService.knurldEnroll();
         popupWindow.dismiss();
     }
 
-
-    @Override
-    public void processFinish(String call, String method, String result) {
-
-        if (method.equals("accessToken")) {
-            setContentView(R.layout.knurld_setup);
-        } else if(method.contains("app-models")) {
-            knurldAppModel.buildFromResponse(result);
-        } else if(method.contains("enrollments")) {
-            knurldEnrollmentsModel.buildFromResponse(result);
-        } else if(method.contains("endpointAnalysis")) {
-            knurldAnalysisModel.buildFromResponse(result);
-            JSONArray phrases = knurldAnalysisModel.intervals;
-            if (phrases != null) {
-                for (int i = 0; i<phrases.length(); i++) {
-                    try {
-                        JSONObject j = phrases.getJSONObject(i);
-                        int start = j.getInt("start");
-                        int stop = j.getInt("stop");
-                        if ((j.getInt("stop") - j.getInt("start")) < 600) {
-                            Toast.makeText(this, "Speak slower and try again", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-        } else if(method.contains("consumers")) {
-            knurldConsumerModel.buildFromResponse(result);
-        } else if(method.contains("verifications")) {
-            knurldVerificationModel.buildFromResponse(result);
-        }
-
-    }
-
-    @Override
-    public void processFinish(String method, boolean result) {
-
-        switch (method) {
-            case "userReady":
-                setContentView(R.layout.knurld_setup);
-                isUserReady = result;
-                break;
-        }
-
-
-    }
 
 
 }

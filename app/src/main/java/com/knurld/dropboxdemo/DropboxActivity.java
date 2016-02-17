@@ -25,6 +25,7 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
+import com.knurld.dropboxdemo.service.*;
 
 import java.util.ArrayList;
 
@@ -55,12 +56,8 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
 
 
-    public KnurldService knurldService;
-    public KnurldAppModel knurldAppModel;
-    public KnurldConsumerModel knurldConsumerModel;
-    public KnurldEnrollmentsModel knurldEnrollmentsModel;
-    public KnurldVerificationModel knurldVerificationModel;
-    public KnurldAnalysisModel knurldAnalysisModel;
+    public com.knurld.dropboxdemo.service.KnurldService knurldService;
+
 
     private String knurldAccessToken;
 
@@ -74,8 +71,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     private ArrayList<String> lockedFiles;
 
     public VerificationItem verificationItem;
-
-    public Thread knurldServiceThread;
 
     private PopupWindow popupWindow;
     private PopupWindow errorWindow;
@@ -99,10 +94,9 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         final String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
 
-        // Start KnurldService thread using StringExtras passed from intent if they exist
         context = this;
 
-        
+
         isUserReady = false;
 
 
@@ -172,25 +166,18 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         LockedItems.saveItems(this, "locked", lockedFiles);
     }
 
-    public void toggleLockOn(final String item, String message, final Boolean locked) {
+    public void toggleLockOn(final String item, String message, final Boolean locked, final String verificationId) {
 
         Activity parent = (Activity) context;
         final View view = LayoutInflater.from(parent).inflate(R.layout.activity_folder_swipe, null);
 
         final PopupWindow loadingWindow = showLoadingPopup(view);
-//
-
-//        CharSequence text = message;
-//        int duration = Toast.LENGTH_LONG;
-//        Toast t = Toast.makeText(parent, text, duration);
-//        t.show();
-
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 boolean verified = false;
-                verified = knurldService.verify();
+                verified = knurldService.verify(verificationId);
 
                 if (!verified) {
                     runOnUiThread(new Runnable() {
@@ -301,18 +288,16 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         if (knurldAccessToken != null) {
             intent.putExtra(KNURLD_TOKEN, knurldAccessToken);
         }
-        if (knurldAppModel != null && knurldAppModel.appModelId != null) {
-            intent.putExtra(KNURLD_APP_MODEL, knurldAppModel.appModelId);
+        if (knurldService.getAppModel() != null) {
+            intent.putExtra(KNURLD_APP_MODEL, knurldService.getAppModel().appModelId);
         }
-        if (knurldConsumerModel != null && knurldConsumerModel.consumerModelId != null) {
-            intent.putExtra(KNURLD_CONSUMER, knurldConsumerModel.consumerModelId);
+        if (knurldService.getConsumerModel() != null) {
+            intent.putExtra(KNURLD_CONSUMER, knurldService.getConsumerModel().consumerModelId);
         }
-        if (knurldVerificationModel != null && knurldVerificationModel.verificationId != null) {
-            intent.putExtra(KNURLD_VERIFICATION, knurldVerificationModel.verificationId);
+        if (knurldService.getEnrollmentModel() != null) {
+            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().enrollmentId);
         }
-        if (knurldAnalysisModel != null && knurldAnalysisModel.taskName != null) {
-            intent.putExtra(KNURLD_ANALYSIS, knurldAnalysisModel.taskName);
-        }
+
         startActivity(intent);
     }
 
@@ -322,17 +307,14 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         if (knurldAccessToken != null) {
             intent.putExtra(KNURLD_TOKEN, knurldAccessToken);
         }
-        if (knurldAppModel != null && knurldAppModel.appModelId != null) {
-            intent.putExtra(KNURLD_APP_MODEL, knurldAppModel.appModelId);
+        if (knurldService.getAppModel() != null) {
+            intent.putExtra(KNURLD_APP_MODEL, knurldService.getAppModel().appModelId);
         }
-        if (knurldConsumerModel != null && knurldConsumerModel.consumerModelId != null) {
-            intent.putExtra(KNURLD_CONSUMER, knurldConsumerModel.consumerModelId);
+        if (knurldService.getConsumerModel() != null) {
+            intent.putExtra(KNURLD_CONSUMER, knurldService.getConsumerModel().consumerModelId);
         }
-        if (knurldVerificationModel != null && knurldVerificationModel.verificationId != null) {
-            intent.putExtra(KNURLD_VERIFICATION, knurldVerificationModel.verificationId);
-        }
-        if (knurldAnalysisModel != null && knurldAnalysisModel.taskName != null) {
-            intent.putExtra(KNURLD_ANALYSIS, knurldAnalysisModel.taskName);
+        if (knurldService.getEnrollmentModel() != null) {
+            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().enrollmentId);
         }
         startActivity(intent);
     }

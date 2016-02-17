@@ -18,6 +18,8 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.knurld.dropboxdemo.service.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,9 +45,9 @@ public class RecordWAVService {
     private PopupWindow popupWindow;
     private View view;
 
-    public KnurldService knurldService;
+    public com.knurld.dropboxdemo.service.KnurldService knurldService;
 
-    public RecordWAVService(Context context, View v, KnurldService knurldService) {
+    public RecordWAVService(Context context, View v, com.knurld.dropboxdemo.service.KnurldService knurldService) {
         this.knurldService = knurldService;
         this.context = context;
         this.view = v;
@@ -58,12 +60,12 @@ public class RecordWAVService {
     }
 
     public void lock(final String lock) {
-        knurldService.startVerification();
+        final String[] verification = knurldService.startVerification();
         View spinnerView = LayoutInflater.from(context).inflate(R.layout.lock_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
         TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
-        textView.setText("Speak in order:\n" + knurldService.knurldVerificationModel.phrases);
+        textView.setText("Speak in order:\n" + verification[0]);
 
         popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
@@ -75,18 +77,18 @@ public class RecordWAVService {
                 new Runnable() {
                     public void run() {
                         stopRecording();
-                        ((DropboxActivity) context).toggleLockOn(lock, "Verifying…", true);
+                        ((DropboxActivity) context).toggleLockOn(lock, "Verifying…", true, verification[1]);
                     }
                 }, 7000);
     }
 
     public void unLock(final String unlock) {
-        knurldService.startVerification();
+        final String[] verification = knurldService.startVerification();
         View spinnerView = LayoutInflater.from(context).inflate(R.layout.unlock_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
         TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
-        textView.setText("Speak in order:\n" + knurldService.knurldVerificationModel.phrases);
+        textView.setText("Speak in order:\n" + verification[0]);
 
         popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
@@ -98,7 +100,7 @@ public class RecordWAVService {
                 new Runnable() {
                     public void run() {
                         stopRecording();
-                        ((DropboxActivity) context).toggleLockOn(unlock, "Verifying…", false);
+                        ((DropboxActivity) context).toggleLockOn(unlock, "Verifying…", false, verification[1]);
                     }
                 }, 7000);
     }

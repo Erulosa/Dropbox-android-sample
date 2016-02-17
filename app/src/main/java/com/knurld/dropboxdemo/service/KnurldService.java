@@ -1,30 +1,5 @@
 package com.knurld.dropboxdemo.service;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.os.AsyncTask;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.PopupWindow;
-import android.widget.ProgressBar;
-
-import com.knurld.dropboxdemo.AsyncKnurldResponse;
-import com.knurld.dropboxdemo.AsyncKnurldVerification;
-import com.knurld.dropboxdemo.KnurldAnalysisModel;
-import com.knurld.dropboxdemo.KnurldAnalysisService;
-import com.knurld.dropboxdemo.KnurldAppModelService;
-import com.knurld.dropboxdemo.KnurldAsyncTask;
-import com.knurld.dropboxdemo.KnurldConsumerModel;
-import com.knurld.dropboxdemo.KnurldConsumerService;
-import com.knurld.dropboxdemo.KnurldEnrollmentService;
-import com.knurld.dropboxdemo.KnurldEnrollmentsModel;
-import com.knurld.dropboxdemo.KnurldUtility;
-import com.knurld.dropboxdemo.KnurldVerificationModel;
-import com.knurld.dropboxdemo.KnurldVerificationService;
-import com.knurld.dropboxdemo.R;
 import com.knurld.dropboxdemo.model.AppModel;
 import com.knurld.dropboxdemo.model.ConsumerModel;
 import com.knurld.dropboxdemo.model.EnrollmentModel;
@@ -33,13 +8,6 @@ import com.knurld.dropboxdemo.model.VerificationModel;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 /**
  * Created by andyshear on 2/15/16.
@@ -155,6 +123,7 @@ public class KnurldService {
 
         EnrollmentModel enrollmentModel = new EnrollmentModel();
         enrollmentModel.buildFromResponse(enrollmentModel.create(body.toString()));
+        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
         setEnrollmentModel(enrollmentModel);
     }
 
@@ -202,8 +171,7 @@ public class KnurldService {
         return true;
     }
 
-    // Set up and run a knurld verification
-    public boolean verify() {
+    public String[] startVerification() {
         AppModel appModel = getAppModel();
         ConsumerModel consumerModel = getConsumerModel();
 
@@ -217,6 +185,17 @@ public class KnurldService {
 
         VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromResponse(verificationModel.create(body.toString()));
+        String verificationId = verificationModel.show(verificationModel.activeVerification);
+        verificationModel.buildFromResponse(verificationId);
+        return new String[]{verificationModel.phrases, verificationId};
+    }
+
+    // Set up and run a knurld verification
+    public boolean verify(String verificationId) {
+        AppModel appModel = getAppModel();
+
+        VerificationModel verificationModel = new VerificationModel();
+        verificationModel.buildFromId(verificationId);
 
         // Create analysis endpoint
         int words = appModel.getVerificationLength();

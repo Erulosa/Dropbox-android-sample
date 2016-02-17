@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.daimajia.swipe.SimpleSwipeListener;
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.adapters.BaseSwipeAdapter;
+import com.knurld.dropboxdemo.service.*;
 
 import java.io.File;
 
@@ -26,10 +27,10 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
 
     private Context context;
     DropboxItem dropboxItem;
-    private KnurldService knurldService;
+    private com.knurld.dropboxdemo.service.KnurldService knurldService;
     private PopupWindow popupWindow;
 
-    public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem, KnurldService knurldService) {
+    public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem, com.knurld.dropboxdemo.service.KnurldService knurldService) {
         this.knurldService = knurldService;
         this.context = context;
         this.dropboxItem = dropboxItem;
@@ -63,7 +64,7 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
         v.findViewById(R.id.lock).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (context instanceof DropboxActivity && knurldService.isUserReady) {
+                if (context instanceof DropboxActivity) {
                     RecordWAVService recordWAVService = new RecordWAVService(context, v, knurldService);
                     dropboxItem.entry.contents.get(position).readOnly = (dropboxItem.entry.contents.get(position).readOnly == true) ? false : true;
                     if (dropboxItem.entry.contents.get(position).readOnly) {
