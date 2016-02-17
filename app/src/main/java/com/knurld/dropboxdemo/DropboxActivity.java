@@ -56,7 +56,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
 
 
-    public com.knurld.dropboxdemo.service.KnurldService knurldService;
+    public KnurldService knurldService;
 
 
     private String knurldAccessToken;
@@ -76,6 +76,8 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     private PopupWindow errorWindow;
     private Context context;
 
+    private Thread knurldServiceThread;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,10 +96,20 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         final String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
 
+        knurldServiceThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                knurldService = new KnurldService(knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
+            }
+        });
+        knurldServiceThread.start();
+
         context = this;
 
 
         isUserReady = false;
+
+
 
 
 
@@ -252,6 +264,11 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
         if (output.equals("finished")) {
 
+            try {
+                knurldServiceThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             setContentView(R.layout.activity_folder_list);
             ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem, knurldService);
@@ -285,7 +302,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     protected void getFolder(String folderPath){
         Intent intent = new Intent(this, DropboxActivity.class);
         intent.putExtra(FILE_PATH, folderPath);
-        if (knurldAccessToken != null) {
+        if (knurldService.getAccessToken() != null) {
             intent.putExtra(KNURLD_TOKEN, knurldAccessToken);
         }
         if (knurldService.getAppModel() != null) {
@@ -304,7 +321,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     protected void getFile(String filePath){
         Intent intent = new Intent(this, ViewItemActivity.class);
         intent.putExtra(FILE_PATH, filePath);
-        if (knurldAccessToken != null) {
+        if (knurldService.getAccessToken() != null) {
             intent.putExtra(KNURLD_TOKEN, knurldAccessToken);
         }
         if (knurldService.getAppModel() != null) {
@@ -385,24 +402,4 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         }
     }
 
-
-//    @Override
-//    public void processFinish(String method, boolean result) {
-//
-//        switch (method) {
-//            case "userReady":
-//                isUserReady = result;
-//                break;
-//            case "analysis":
-//                knurldService.knurldVerify(this);
-//                break;
-//            case "verification":
-//                if (result)
-//                    authenticateItem();
-//        }
-//
-//
-//    }
-
-    
 }

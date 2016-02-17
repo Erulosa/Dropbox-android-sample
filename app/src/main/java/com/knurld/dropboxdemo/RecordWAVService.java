@@ -45,9 +45,9 @@ public class RecordWAVService {
     private PopupWindow popupWindow;
     private View view;
 
-    public com.knurld.dropboxdemo.service.KnurldService knurldService;
+    public KnurldService knurldService;
 
-    public RecordWAVService(Context context, View v, com.knurld.dropboxdemo.service.KnurldService knurldService) {
+    public RecordWAVService(Context context, View v, KnurldService knurldService) {
         this.knurldService = knurldService;
         this.context = context;
         this.view = v;

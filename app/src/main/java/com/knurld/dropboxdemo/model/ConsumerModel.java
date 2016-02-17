@@ -56,11 +56,16 @@ public class ConsumerModel extends KnurldModelService {
     @Override
     public void buildFromId(String id) {
         this.consumerModelId = id;
+        if (id == null) {
+            buildFromResponse(index());
+        } else {
+            buildFromResponse(show(id));
+        }
     }
 
     @Override
     public String index() {
-        return getRequest("consumers");
+        return getRequest("consumers", null);
     }
 
     @Override

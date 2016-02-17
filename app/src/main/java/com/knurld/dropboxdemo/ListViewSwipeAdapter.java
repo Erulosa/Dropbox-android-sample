@@ -27,10 +27,10 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
 
     private Context context;
     DropboxItem dropboxItem;
-    private com.knurld.dropboxdemo.service.KnurldService knurldService;
+    private KnurldService knurldService;
     private PopupWindow popupWindow;
 
-    public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem, com.knurld.dropboxdemo.service.KnurldService knurldService) {
+    public ListViewSwipeAdapter(Context context, DropboxItem dropboxItem, KnurldService knurldService) {
         this.knurldService = knurldService;
         this.context = context;
         this.dropboxItem = dropboxItem;

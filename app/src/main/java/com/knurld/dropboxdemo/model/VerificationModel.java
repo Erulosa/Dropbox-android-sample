@@ -126,11 +126,16 @@ public class VerificationModel extends KnurldModelService {
     @Override
     public void buildFromId(String id) {
         this.verificationId = id;
+        if (id == null) {
+            buildFromResponse(index());
+        } else {
+            buildFromResponse(show(id));
+        }
     }
 
     @Override
     public String index() {
-        return getRequest("verifications");
+        return getRequest("verifications", null);
     }
 
     @Override

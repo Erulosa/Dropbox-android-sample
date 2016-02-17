@@ -13,7 +13,15 @@ import org.json.JSONObject;
  * Created by andyshear on 2/15/16.
  */
 public class KnurldService {
-    private static String CLIENT_TOKEN;
+    private static String CLIENT_TOKEN = null;
+
+    public static String getClientToken() {
+        return CLIENT_TOKEN;
+    }
+
+    public static void setClientToken(String clientToken) {
+        CLIENT_TOKEN = clientToken;
+    }
 
     // Models
     private AppModel appModel;
@@ -68,14 +76,34 @@ public class KnurldService {
 
     // Start knurld service with existing model ID's
     public KnurldService(String token, String appModelId, String consumerModelId, String enrollmentModelId) {
-        CLIENT_TOKEN = token;
+        CLIENT_TOKEN = token == null ? requestToken() : token;
+        KnurldModelService.setClientToken(CLIENT_TOKEN);
         setupExistingKnurldUser(appModelId, consumerModelId, enrollmentModelId);
+    }
+
+    // Start thread to request token
+    public String requestToken() {
+        final String[] token = {null};
+        Thread tokenThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                token[0] = getAccessToken();
+            }
+        });
+        tokenThread.start();
+
+        try {
+            tokenThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return token[0];
     }
 
     // Get knurld access token
     public String getAccessToken(){
         KnurldTokenService knurldTokenService = new KnurldTokenService();
-        return CLIENT_TOKEN == null ? knurldTokenService.getToken() : CLIENT_TOKEN;
+        return CLIENT_TOKEN == null ? knurldTokenService.getToken() : "failed";
     }
 
     // Set up a knurld user that has already been created
@@ -185,9 +213,8 @@ public class KnurldService {
 
         VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromResponse(verificationModel.create(body.toString()));
-        String verificationId = verificationModel.show(verificationModel.activeVerification);
-        verificationModel.buildFromResponse(verificationId);
-        return new String[]{verificationModel.phrases, verificationId};
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
+        return new String[]{verificationModel.phrases, verificationModel.activeVerification};
     }
 
     // Set up and run a knurld verification

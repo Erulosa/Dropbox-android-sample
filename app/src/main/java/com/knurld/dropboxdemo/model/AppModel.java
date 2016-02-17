@@ -85,11 +85,16 @@ public class AppModel extends KnurldModelService {
     @Override
     public void buildFromId(String id) {
         this.appModelId = id;
+        if (id == null) {
+            buildFromResponse(index());
+        } else {
+            buildFromResponse(show(id));
+        }
     }
 
     @Override
     public String index() {
-        return getRequest("app-models");
+        return getRequest("app-models", null);
     }
 
     @Override

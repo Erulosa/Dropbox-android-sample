@@ -102,11 +102,16 @@ public class EnrollmentModel extends KnurldModelService {
     @Override
     public void buildFromId(String id) {
         this.enrollmentId = id;
+        if (id == null) {
+            buildFromResponse(index());
+        } else {
+            buildFromResponse(show(id));
+        }
     }
 
     @Override
     public String index() {
-        return getRequest("enrollments");
+        return getRequest("enrollments", null);
     }
 
     @Override

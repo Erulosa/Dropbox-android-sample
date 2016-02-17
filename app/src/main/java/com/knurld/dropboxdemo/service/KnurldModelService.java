@@ -27,6 +27,9 @@ public abstract class KnurldModelService {
 
     private static final String LINE_FEED = "\r\n";
 
+    public static void setClientToken(String clientToken) {
+        CLIENT_TOKEN = clientToken;
+    }
 
     public abstract void buildFromResponse(String response);
     public abstract void buildFromId(String id);
