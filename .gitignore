@@ -9,3 +9,7 @@
 /captures
 .name
 .idea/
+.idea/misc.xml
+misc.xml
+.idea/vcs.xml
+.idea/modules.xml

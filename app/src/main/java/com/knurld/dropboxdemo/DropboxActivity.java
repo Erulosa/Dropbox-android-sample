@@ -28,7 +28,7 @@ import com.dropbox.client2.session.AppKeyPair;
 
 import java.util.ArrayList;
 
-public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnurldVerification{
+public class DropboxActivity extends Activity implements AsyncResponse {
 
     final static private String APP_KEY = "d3zx13rhlc2jbpr";
     final static private String APP_SECRET = "rfnin8j6dr3uhuv";
@@ -52,7 +52,6 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     public DropboxService dropboxService;
     public boolean doneEnrolling;
     public boolean isUserReady;
-    public AsyncKnurldVerification knurldVerification;
 
 
 
@@ -82,7 +81,6 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     private PopupWindow errorWindow;
     private Context context;
 
-    private MessageHandler messageHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,15 +101,8 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
 
         // Start KnurldService thread using StringExtras passed from intent if they exist
         context = this;
-        knurldVerification = this;
-        knurldServiceThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                knurldService = new KnurldService(knurldVerification, context, knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
-            }
-        });
 
-        knurldServiceThread.start();
+        
         isUserReady = false;
 
 
@@ -413,39 +404,23 @@ public class DropboxActivity extends Activity implements AsyncResponse, AsyncKnu
     }
 
 
-    @Override
-    public void processFinish(String method, boolean result) {
+//    @Override
+//    public void processFinish(String method, boolean result) {
+//
+//        switch (method) {
+//            case "userReady":
+//                isUserReady = result;
+//                break;
+//            case "analysis":
+//                knurldService.knurldVerify(this);
+//                break;
+//            case "verification":
+//                if (result)
+//                    authenticateItem();
+//        }
+//
+//
+//    }
 
-        switch (method) {
-            case "userReady":
-                isUserReady = result;
-                break;
-            case "analysis":
-                knurldService.knurldVerify(this);
-                break;
-            case "verification":
-                if (result)
-                    authenticateItem();
-        }
-
-
-    }
-
-    public class MessageHandler extends android.os.Handler {
-
-        public static final int MESSAGE_CODE = 2;
-        private LoadingPopup loadingPopup;
-
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == MESSAGE_CODE) {
-                loadingPopup = new LoadingPopup(context, msg);
-            }
-        }
-
-        public PopupWindow getPopup() {
-            return loadingPopup.getPopupWindow();
-        }
-    }
     
 }
