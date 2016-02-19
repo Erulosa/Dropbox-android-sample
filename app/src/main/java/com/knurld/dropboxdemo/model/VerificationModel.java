@@ -16,6 +16,7 @@ public class VerificationModel extends KnurldModelService {
     private String verifivationWAV;
     public JSONArray intervals;
     public boolean verified;
+    public boolean completed;
     public boolean failed;
     public boolean isActive;
     public String phrases;
@@ -79,8 +80,9 @@ public class VerificationModel extends KnurldModelService {
                     }
                 }
                 failed = item.has("status") && item.getString("status").contains("failed");
-                verified = item.has("status") && item.getString("status").contains("completed");
-                if (!verified) {
+                verified = item.has("verified") && item.getString("verified").contains("true");
+                completed = item.has("status") && item.getString("status").contains("completed");
+                if (!completed) {
                     isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
                 }
                 String h = item.has("href") ? item.getString("href") : null;
@@ -105,15 +107,16 @@ public class VerificationModel extends KnurldModelService {
                 }
 
                 failed = jsonParam.has("status") && jsonParam.getString("status").contains("failed");
-                verified = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
-                if (!verified) {
+                verified = jsonParam.has("verified") && jsonParam.getString("verified").contains("true");
+                completed = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
+                if (!completed) {
                     isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
                 }
                 String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
                 if (this.activeVerification != null) {
                     setHref(h);
                 }
-                if (h != null && !verified) {
+                if (h != null && !completed) {
                     setVerification(h);
                 }
             }

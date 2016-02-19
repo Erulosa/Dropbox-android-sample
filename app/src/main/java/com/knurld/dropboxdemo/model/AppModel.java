@@ -33,6 +33,10 @@ public class AppModel extends KnurldModelService {
         return verificationLength;
     }
 
+    public int getEnrollmentRepeats() {
+        return enrollmentRepeats;
+    }
+
     public void setVocabulary(JSONArray vocabulary) {
         this.vocabulary = vocabulary;
     }
@@ -58,6 +62,7 @@ public class AppModel extends KnurldModelService {
                 JSONObject item = (JSONObject) items.get(items.length()-1);
                 String h = item.has("href") ? item.getString("href") : null;
                 JSONArray vocab = item.has("vocabulary") ? item.getJSONArray("vocabulary") : null;
+                enrollmentRepeats = item.has("enrollmentRepeats") ? item.getInt("enrollmentRepeats") : null;
                 verificationLength = item.has("verificationLength") ? item.getInt("verificationLength") : null;
                 if (h != null) {
                     setHref(h);
@@ -67,6 +72,7 @@ public class AppModel extends KnurldModelService {
                 }
             } else {
                 String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
+                enrollmentRepeats = jsonParam.has("enrollmentRepeats") ? jsonParam.getInt("enrollmentRepeats") : null;
                 verificationLength = jsonParam.has("verificationLength") ? jsonParam.getInt("verificationLength") : null;
                 JSONArray vocab = jsonParam.has("vocabulary") ? jsonParam.getJSONArray("vocabulary") : null;
                 if (h != null) {

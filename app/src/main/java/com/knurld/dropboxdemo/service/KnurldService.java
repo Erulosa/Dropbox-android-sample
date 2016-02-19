@@ -13,13 +13,12 @@ import org.json.JSONObject;
  * Created by andyshear on 2/15/16.
  */
 public class KnurldService {
+    // Knurld toke, Getter/Setter
     private static String CLIENT_TOKEN = null;
-
-    public static String getClientToken() {
+    public String getClientToken() {
         return CLIENT_TOKEN;
     }
-
-    public static void setClientToken(String clientToken) {
+    public void setClientToken(String clientToken) {
         CLIENT_TOKEN = clientToken;
     }
 
@@ -48,33 +47,15 @@ public class KnurldService {
         this.enrollmentModel = enrollmentModel;
     }
 
-    // Start knurld service by getting token
+    // Empty constructor for KnurldActivity
     public KnurldService() {
-        final String[] token = {null};
-        Thread tokenThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                token[0] = getAccessToken();
-            }
-        });
-        tokenThread.start();
-
-        try {
-            tokenThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        CLIENT_TOKEN = token[0] == null ? "failed" : token[0];
-        setupKnurldUser();
+        CLIENT_TOKEN = requestToken();
+        KnurldModelService.setClientToken(CLIENT_TOKEN);
+        setupExistingKnurldUser(null, null, null);
     }
 
-    // Start knurld service with existing token, no existing models
-    public KnurldService(String token) {
-        CLIENT_TOKEN = token;
-        setupKnurldUser();
-    }
-
-    // Start knurld service with existing model ID's
+    // Start knurld service by getting token, or
+    // Start knurld service with existing token, pass in model Id's if they exist
     public KnurldService(String token, String appModelId, String consumerModelId, String enrollmentModelId) {
         CLIENT_TOKEN = token == null ? requestToken() : token;
         KnurldModelService.setClientToken(CLIENT_TOKEN);
@@ -103,25 +84,10 @@ public class KnurldService {
     // Get knurld access token
     public String getAccessToken(){
         KnurldTokenService knurldTokenService = new KnurldTokenService();
-        return CLIENT_TOKEN == null ? knurldTokenService.getToken() : "failed";
+        return CLIENT_TOKEN = knurldTokenService.getToken();
     }
 
-    // Set up a knurld user that has already been created
-    public void setupKnurldUser() {
-        AppModel appModel = new AppModel();
-        ConsumerModel consumerModel = new ConsumerModel();
-        EnrollmentModel enrollmentModel = new EnrollmentModel();
-
-        appModel.buildFromResponse(appModel.index());
-        consumerModel.buildFromResponse(consumerModel.index());
-        enrollmentModel.buildFromResponse(enrollmentModel.index());
-
-        setAppModel(appModel);
-        setConsumerModel(consumerModel);
-        setEnrollmentModel(enrollmentModel);
-    }
-
-    // Set up an existing knurld user with ID's
+    // Set up an existing knurld user with ID's, or each model will be built from index call
     public void setupExistingKnurldUser(String appModelId, String consumerModelId, String enrollmentModelId) {
         AppModel appModel = new AppModel();
         ConsumerModel consumerModel = new ConsumerModel();
@@ -137,7 +103,7 @@ public class KnurldService {
     }
 
     // Get existing appModel and consumerModel, then create an enrollment
-    public void knurldEnroll() {
+    public void startEnrollment() {
         AppModel appModel = getAppModel();
         ConsumerModel consumerModel = getConsumerModel();
 
@@ -156,36 +122,26 @@ public class KnurldService {
     }
 
     // Set up a knurld user who has not yet created an enrollment
-    public boolean setupKnurldEnrollment() {
-        AppModel appModel = new AppModel();
-        ConsumerModel consumerModel = new ConsumerModel();
+    public boolean enroll() {
+        AppModel appModel = getAppModel();
 
-        // Build existing appModel and consumerModel
-        appModel.buildFromResponse(appModel.index());
-        consumerModel.buildFromResponse(consumerModel.index());
-
-        setAppModel(appModel);
-        setConsumerModel(consumerModel);
-
-        // Get newly created enrollment, then update enrollment with enrollment.wav
-        knurldEnroll();
-        EnrollmentModel enrollmentModel = getEnrollmentModel();
+        final EnrollmentModel enrollmentModel = getEnrollmentModel();
 
         // Create analysis endpoint
         int words = appModel.getVocabulary().length();
-        final JSONObject enrollmentBody = new JSONObject();
+        final JSONObject body = new JSONObject();
         try {
-            enrollmentBody.put("filedata", "enrollment.wav");
-            enrollmentBody.put("words", words);
+            body.put("filedata", "enrollment.wav");
+            body.put("words", words);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         // Get phrase intervals from analysis service
-        JSONArray intervals = runAnalysis(enrollmentBody);
+        final JSONArray intervals = runAnalysis(body);
 
         // Add phrases to analysis intervals
-        JSONObject analysisObj = prepareAnalysisJSON(intervals);
+        JSONObject analysisObj = prepareAnalysisJSON(intervals, getAppModel().getVocabulary(), getAppModel().getEnrollmentRepeats(), getAppModel().getVocabulary().length());
 
         // Return false if there is a bad analysis, re-record enrollment and try again
         if (analysisObj == null) {
@@ -193,10 +149,35 @@ public class KnurldService {
         }
 
         // Update enrollment with valid intervals from analysis, then set enrollment
-        enrollmentModel.buildFromResponse(enrollmentModel.update(analysisObj.toString()));
+        enrollmentModel.buildFromResponse(enrollmentModel.update(enrollmentModel.enrollmentId, analysisObj.toString()));
+        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+
+        Thread enrollmentThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                // Poll for enrollment to finish every 0.5 seconds until complete
+                while (!enrollmentModel.enrolled && !enrollmentModel.failed) {
+                    try {
+                        Thread.sleep(500, 0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+                }
+            }
+        });
+        enrollmentThread.start();
+
+        try {
+            enrollmentThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         setEnrollmentModel(enrollmentModel);
-        return true;
+        return enrollmentModel.enrolled;
     }
 
     public String[] startVerification() {
@@ -214,31 +195,37 @@ public class KnurldService {
         VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromResponse(verificationModel.create(body.toString()));
         verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-        return new String[]{verificationModel.phrases, verificationModel.activeVerification};
+        return new String[]{verificationModel.phrases, verificationModel.activeVerification, verificationModel.phrasesArray.toString()};
     }
 
     // Set up and run a knurld verification
-    public boolean verify(String verificationId) {
+    public boolean verify(String verificationId, String vocab) {
         AppModel appModel = getAppModel();
 
-        VerificationModel verificationModel = new VerificationModel();
+        final VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromId(verificationId);
 
         // Create analysis endpoint
         int words = appModel.getVerificationLength();
-        final JSONObject enrollmentBody = new JSONObject();
+        final JSONObject body = new JSONObject();
         try {
-            enrollmentBody.put("filedata", "verification.wav");
-            enrollmentBody.put("words", words);
+            body.put("filedata", "verification.wav");
+            body.put("words", words);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         // Get phrase intervals from analysis service
-        JSONArray intervals = runAnalysis(enrollmentBody);
+        JSONArray intervals = runAnalysis(body);
 
         // Add phrases to analysis intervals
-        JSONObject analysisObj = prepareAnalysisJSON(intervals);
+        JSONArray vocabArray = null;
+        try {
+            vocabArray = new JSONArray(vocab);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject analysisObj = prepareAnalysisJSON(intervals, vocabArray, 1, vocabArray.length());
 
         // Return false if there is a bad analysis, re-record enrollment and try again
         if (analysisObj == null) {
@@ -246,9 +233,33 @@ public class KnurldService {
         }
 
         // Update enrollment with valid intervals from analysis, then set enrollment
-        verificationModel.buildFromResponse(verificationModel.update(analysisObj.toString()));
+        verificationModel.buildFromResponse(verificationModel.update(verificationId, analysisObj.toString()));
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
 
-        return verificationModel.isVerified();
+        Thread verificationThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                // Poll for enrollment to finish every 0.5 seconds until complete
+                while (!verificationModel.verified && !verificationModel.failed && !verificationModel.completed) {
+                    try {
+                        Thread.sleep(500, 0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
+                }
+            }
+        });
+        verificationThread.start();
+
+        try {
+            verificationThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return verificationModel.verified;
     }
 
     protected JSONArray runAnalysis(final JSONObject body) {
@@ -270,7 +281,13 @@ public class KnurldService {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    intervals[0] = knurldAnalysisService.getAnalysis(analysis[0]);
+                    String analysisId = "";
+                    try {
+                        analysisId = new JSONObject(analysis[0]).getString("taskName");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
                 }
             }
         });
@@ -284,15 +301,13 @@ public class KnurldService {
         return intervals[0];
     }
 
-    protected JSONObject prepareAnalysisJSON(JSONArray phrases) {
-        int words = getAppModel().getVocabulary().length();
-        JSONObject enrollmentBody = new JSONObject();
-        JSONArray vocab = getAppModel().getVocabulary();
+    protected JSONObject prepareAnalysisJSON(JSONArray phrases, JSONArray vocab, int repeats, int words) {
+        JSONObject body = new JSONObject();
 
-        // Add phrases to intervals, accounting for 3x repeated phrases
+        // Add phrases to intervals, accounting for enrollmentRepeats
         boolean validPhrases = true;
         JSONArray newPhrases = new JSONArray();
-        for (int i = 0; i< words * 3; i++) {
+        for (int i = 0; i< words * repeats; i++) {
             try {
                 JSONObject j = phrases.getJSONObject(i);
                 int start = j.getInt("start");
@@ -300,21 +315,21 @@ public class KnurldService {
                 if ((stop - start) < 600) {
                     validPhrases = false;
                 }
-                j.put("phrase", vocab.get(i%5));
+                j.put("phrase", vocab.get(i%words));
                 newPhrases.put(j);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         try {
-            enrollmentBody.put("intervals", newPhrases);
+            body.put("intervals", newPhrases);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         // Check if all phrases are valid, if not, try recording enrollment again
         if (validPhrases) {
-            return enrollmentBody;
+            return body;
         }
         return null;
     }

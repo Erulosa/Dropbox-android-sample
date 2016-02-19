@@ -6,66 +6,40 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="App-Model"
-        android:id="@+id/createAppModel"
-        android:layout_marginTop="33dp"
-        android:onClick="setKnurldAppModel"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Endpoint"
-        android:id="@+id/endpoint"
-        android:onClick="setKnurldEndpointAnalysis"
-        android:layout_below="@+id/getAppModel"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="getTask"
-        android:id="@+id/getTask"
-        android:onClick="getKnurldEndpointAnalysis"
-        android:layout_below="@+id/endpoint"
-        android:layout_alignLeft="@+id/endpoint"
-        android:layout_alignStart="@+id/endpoint" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="getAppModel"
-        android:id="@+id/getAppModel"
-        android:layout_below="@+id/createAppModel"
-        android:layout_centerHorizontal="true"
-        android:onClick="getKnurldAppModel" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="setEnrollment"
         android:id="@+id/setEnrollment"
-        android:layout_below="@+id/getTask"
-        android:layout_centerHorizontal="true"
-        android:onClick="setKnurldEnrollment" />
+        android:onClick="setKnurldEnrollment"
+        android:layout_marginBottom="51dp"
+        android:layout_above="@+id/recordEnrollment"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="updateEnrollment"
         android:id="@+id/updateEnrollment"
-        android:layout_below="@+id/setEnrollment"
-        android:layout_centerHorizontal="true"
         android:onClick="updateKnurldEnrollment"
-        android:nestedScrollingEnabled="false" />
+        android:nestedScrollingEnabled="false"
+        android:layout_marginTop="54dp"
+        android:layout_below="@+id/recordEnrollment"
+        android:layout_alignLeft="@+id/recordEnrollment"
+        android:layout_alignStart="@+id/recordEnrollment" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Record Enrollment"
         android:id="@+id/recordEnrollment"
-        android:layout_alignParentBottom="true"
+        android:onClick="recordEnrollment"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/enrollmentInstructions"
+        android:layout_above="@+id/recordEnrollment"
         android:layout_centerHorizontal="true"
-        android:onClick="recordEnrollment" />
+        android:text="Enrollment Instructions..." />
+
 </RelativeLayout>

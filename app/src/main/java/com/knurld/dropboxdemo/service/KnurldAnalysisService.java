@@ -39,7 +39,7 @@ public class KnurldAnalysisService {
         InputStream in = null;
         String result = "";
 
-        String urlString = "https://api.knurld.io/v1/endpointAnalysis" + urlParam;
+        String urlString = "https://api.knurld.io/v1/endpointAnalysis/" + urlParam;
 
 
         try {

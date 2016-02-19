@@ -26,18 +26,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class KnurldActivity extends Activity implements AsyncMessage {
+public class KnurldActivity extends Activity {
 
-    public com.knurld.dropboxdemo.service.KnurldService knurldService;
+    public KnurldService knurldService;
+    private Thread knurldServiceThread;
 
-    public Thread knurldServiceThread;
+    private static final String KNURLD_INSTRUCTIONS = "KNURLD_INSTRUCTIONS";
 
-    public boolean isUserReady;
-
-    public String taskName;
-    public JSONObject intervals;
-
-    public PopupWindow popupWindow;
     private Context context;
 
     @Override
@@ -47,90 +42,151 @@ public class KnurldActivity extends Activity implements AsyncMessage {
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressSpinner);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.rgb(226, 132, 59), PorterDuff.Mode.MULTIPLY);
 
+        Intent intent = getIntent();
         context = this;
-        isUserReady = false;
+
+        knurldServiceThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                knurldService = new KnurldService();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showSetup();
+                    }
+                });
+
+            }
+        });
+        knurldServiceThread.start();
+
+
+
 
     }
 
+    public void showSetup() {
+        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        setContentView(R.layout.knurld_setup);
+        try {
+            knurldServiceThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-    public PopupWindow showLoading() {
-        View view = LayoutInflater.from(context).inflate(R.layout.knurld_setup, null);
-        View spinnerView = LayoutInflater.from(context).inflate(R.layout.loading_popup, null);
+    }
+
+    public PopupWindow showLoadingPopup(View view) {
+        View spinnerView = LayoutInflater.from((Activity) context).inflate(R.layout.loading_popup, null);
         ProgressBar progressBar = (ProgressBar) spinnerView.findViewById(R.id.speakProgress);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
 
-        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        PopupWindow popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-
         return popupWindow;
     }
 
-    public void showInstructions() {
-        View view = LayoutInflater.from(this).inflate(R.layout.knurld_setup, null);
-        View spinnerView = LayoutInflater.from(this).inflate(R.layout.instructions_popup, null);
+    public void showInstructions(View view) {
+        Activity parent = (Activity) context;
+        View spinnerView = LayoutInflater.from(parent).inflate(R.layout.instructions_popup, null);
 
 
         TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
-        String vocab = knurldService.getAppModel().getVocabulary().toString();
-        textView.setText("Speak in order 3x:\n" + vocab);
+        textView.setText("Press record to begin recording enrollment");
 
-        popupWindow = new PopupWindow(spinnerView, 500, 500);
+        PopupWindow popupWindow = new PopupWindow(spinnerView, 500, 500);
         popupWindow.setFocusable(true);
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
 
 
+        final PopupWindow finalPopupWindow = popupWindow;
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
-                        popupWindow.dismiss();
+                        finalPopupWindow.dismiss();
                     }
-                }, 5000);
+                }, 3000);
 
     }
 
-    @Override
-    public void processFinish(PopupWindow popupWindow) {
-        popupWindow.dismiss();
+    public void showMessage(View view, String message) {
+        Activity parent = (Activity) context;
+        View spinnerView = LayoutInflater.from(parent).inflate(R.layout.instructions_popup, null);
+
+
+        TextView textView = (TextView) spinnerView.findViewById(R.id.phraseText);
+        textView.setText(message);
+
+        PopupWindow popupWindow = new PopupWindow(spinnerView, 500, 500);
+        popupWindow.setFocusable(true);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+
+        final PopupWindow finalPopupWindow = popupWindow;
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        finalPopupWindow.dismiss();
+                    }
+                }, 3000);
+
     }
 
-    private class AsyncPopup extends AsyncTask<String, String, PopupWindow> {
-        public AsyncMessage delegate = null;
-        @Override
-        protected PopupWindow doInBackground(String... params) {
-            Looper.prepare();
-            return showLoading();
-        }
-
-        protected void onPostExecute(PopupWindow result) {
-            delegate.processFinish(result);
-        }
-
-    }
 
     public void recordEnrollment(View view) {
         Intent intent = new Intent(this, RecordWAVActivity.class);
+        String vocab = knurldService.getAppModel().getVocabulary().toString();
+        intent.putExtra(KNURLD_INSTRUCTIONS, vocab);
+
         startActivity(intent);
     }
 
     public void setKnurldEnrollment(View view) {
-        runOnUiThread(new Runnable() {
+        Activity parent = (Activity) context;
+        final View layoutView = LayoutInflater.from(parent).inflate(R.layout.knurld_setup, null);
+        final PopupWindow loadingWindow = showLoadingPopup(layoutView);
+
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                popupWindow = showLoading();
+                knurldService.startEnrollment();
+                runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadingWindow.dismiss();
+                        }
+                    });
+
             }
-        });
-        knurldService.setupKnurldEnrollment();
-        popupWindow.dismiss();
-        showInstructions();
+        }).start();
+        showInstructions(layoutView);
     }
 
     public void updateKnurldEnrollment(View view) {
-        popupWindow = showLoading();
-        knurldService.knurldEnroll();
-        popupWindow.dismiss();
+        Activity parent = (Activity) context;
+        final View layoutView = LayoutInflater.from(parent).inflate(R.layout.knurld_setup, null);
+        final PopupWindow loadingWindow = showLoadingPopup(layoutView);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean isEnrolled = knurldService.enroll();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isEnrolled) {
+                            loadingWindow.dismiss();
+                            showMessage(layoutView, "Enrollment completed!");
+                        }
+                        else {
+                            loadingWindow.dismiss();
+                            showMessage(layoutView, "Enrollment failed, please try again");
+                        }
+                    }
+                });
+
+            }
+        }).start();
     }
-
-
-
 }

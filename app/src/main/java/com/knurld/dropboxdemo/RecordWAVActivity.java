@@ -5,19 +5,23 @@
 package com.knurld.dropboxdemo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class RecordWAVActivity extends Activity{
     private static final int RECORDER_BPP = 16;
@@ -27,6 +31,7 @@ public class RecordWAVActivity extends Activity{
     private static final int RECORDER_SAMPLERATE = 11025;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    private static final String KNURLD_INSTRUCTIONS = "KNURLD_INSTRUCTIONS";
 
     private AudioRecord recorder = null;
     private int bufferSize = 0;
@@ -38,6 +43,14 @@ public class RecordWAVActivity extends Activity{
         super.onCreate(savedInstanceState);
         //TODO
         setContentView(R.layout.record_wav_view);
+
+        Intent intent = getIntent();
+
+        final String knurldInstrucitons = intent.getStringExtra(KNURLD_INSTRUCTIONS);
+        View view = LayoutInflater.from(this).inflate(R.layout.record_wav_view, null);
+
+        TextView textView = (TextView) view.findViewById(R.id.enrollmentInstrucitons);
+        textView.setText(knurldInstrucitons);
 
         setButtonHandlers();
         enableButtons(false);
