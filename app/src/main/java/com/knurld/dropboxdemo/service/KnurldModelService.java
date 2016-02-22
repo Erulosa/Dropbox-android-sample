@@ -153,56 +153,7 @@ public abstract class KnurldModelService {
             urlConnection.setDoOutput(true);
             urlConnection.setDoInput(true);
 
-            if (method.contains("endpointAnalysis")) {
-                String boundary = "===" + System.currentTimeMillis() + "===";
-
-                urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
-                urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
-                urlConnection.setRequestMethod("POST");
-                urlConnection.connect();
-
-                OutputStream outputStream = urlConnection.getOutputStream();
-
-                String filePath = Environment.getExternalStorageDirectory().getPath();
-                filePath = filePath + "/AudioRecorder/";
-                JSONObject jsonBody = new JSONObject(body);
-                String fileName = jsonBody.getString("filedata");
-                file = new File(filePath, fileName);
-
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
-                String name = "filedata";
-                writer.append("--" + boundary).append(LINE_FEED);
-                writer.append("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + fileName + "\"").append(LINE_FEED);
-                writer.append("Content-Type: audio/wav").append(LINE_FEED);
-                writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
-                writer.append(LINE_FEED);
-                writer.flush();
-
-                FileInputStream fin = new FileInputStream(file);
-                byte[] buffer = new byte[4096];
-                int bytesRead = -1;
-                while ((bytesRead = fin.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                outputStream.flush();
-                fin.close();
-
-                writer.append(LINE_FEED);
-                writer.flush();
-
-                writer.append("--" + boundary).append(LINE_FEED);
-                writer.append("Content-Disposition: form-data; name=\"words\"").append(LINE_FEED);
-                writer.append("Content-Type: text/plain; charset=UTF-8").append(LINE_FEED);
-                writer.append(LINE_FEED);
-                writer.append("3").append(LINE_FEED);
-                writer.flush();
-
-                writer.append(LINE_FEED).flush();
-                writer.append("--" + boundary + "--").append(LINE_FEED);
-                writer.close();
-
-            } else if (method.contains("enrollment") && urlStringParams != "") {
+            if (method.contains("enrollment") && urlStringParams != "") {
                 method = "setupEnrollment";
                 String boundary = "Nonce";
 
@@ -211,10 +162,6 @@ public abstract class KnurldModelService {
                 urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
                 urlConnection.setRequestMethod("POST");
                 urlConnection.connect();
-
-//                String fPath = Environment.getExternalStorageDirectory().getPath();
-//                File file1 = new File(fPath, "test.txt");
-//                OutputStream outputStream = new FileOutputStream(file1);
 
                 OutputStream outputStream = urlConnection.getOutputStream();
 
@@ -266,10 +213,6 @@ public abstract class KnurldModelService {
                 urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
                 urlConnection.setRequestMethod("POST");
                 urlConnection.connect();
-
-//                String fPath = Environment.getExternalStorageDirectory().getPath();
-//                File file1 = new File(fPath, "test.txt");
-//                OutputStream outputStream = new FileOutputStream(file1);
 
                 OutputStream outputStream = urlConnection.getOutputStream();
 

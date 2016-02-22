@@ -33,14 +33,6 @@ public class EnrollmentModel extends KnurldModelService {
         this.href = href;
     }
 
-    public String getEnrollmentId() {
-        return enrollmentId;
-    }
-
-    public void setEnrollmentId(String enrollmentId) {
-        this.enrollmentId = enrollmentId;
-    }
-
     @Override
     public void buildFromResponse(String response) {
 

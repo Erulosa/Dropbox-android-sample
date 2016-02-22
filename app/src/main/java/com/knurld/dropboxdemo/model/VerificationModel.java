@@ -50,11 +50,6 @@ public class VerificationModel extends KnurldModelService {
         this.href = href;
     }
 
-
-    public boolean isVerified() {
-        return verified;
-    }
-
     @Override
     public void buildFromResponse(String response) {
 

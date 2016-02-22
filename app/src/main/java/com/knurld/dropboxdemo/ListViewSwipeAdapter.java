@@ -46,12 +46,6 @@ public class ListViewSwipeAdapter extends BaseSwipeAdapter {
         final int position = i;
         final View v = LayoutInflater.from(context).inflate(R.layout.activity_folder_swipe, null);
         final SwipeLayout swipeLayout = (SwipeLayout)v.findViewById(getSwipeLayoutResourceId(i));
-        swipeLayout.addSwipeListener(new SimpleSwipeListener() {
-            @Override
-            public void onOpen(SwipeLayout layout) {
-//                Toast.makeText(context, "swiped", Toast.LENGTH_SHORT).show();
-            }
-        });
 
         v.findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
             @Override

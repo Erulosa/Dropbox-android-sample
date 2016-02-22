@@ -250,10 +250,13 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         if (output.equals("finished")) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             setContentView(R.layout.activity_folder_list);
-            try {
-                knurldServiceThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+            while (knurldServiceThread.isAlive()) {
+                try {
+                    knurldServiceThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem, knurldService);
