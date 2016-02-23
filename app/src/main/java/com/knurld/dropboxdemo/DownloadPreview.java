@@ -73,6 +73,7 @@ public class DownloadPreview {
             result = Bitmap.createScaledBitmap(result, result.getWidth(), result.getHeight(), false);
             FileOutputStream out;
             String filePath = Environment.getExternalStorageDirectory().toString();
+            
             File file = new File(filePath, "test"+fileName+"Preview.jpeg");
             try {
                 out = new FileOutputStream(file);

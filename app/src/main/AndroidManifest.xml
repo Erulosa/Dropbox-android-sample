@@ -41,8 +41,6 @@
             android:screenOrientation="portrait"></activity>
         <activity android:name=".ViewItemActivity"
             android:screenOrientation="portrait"></activity>
-        <activity android:name=".AudioRecordTest"
-            android:screenOrientation="portrait"></activity>
         <activity android:name=".RecordWAVActivity"
             android:screenOrientation="portrait"></activity>
         <activity android:name=".KnurldActivity"
