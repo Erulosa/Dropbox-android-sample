@@ -11,6 +11,7 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -41,16 +42,13 @@ public class RecordWAVActivity extends Activity{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //TODO
         setContentView(R.layout.record_wav_view);
 
         Intent intent = getIntent();
 
         final String knurldInstrucitons = intent.getStringExtra(KNURLD_INSTRUCTIONS);
-        View view = LayoutInflater.from(this).inflate(R.layout.record_wav_view, null);
 
-        TextView textView = (TextView) view.findViewById(R.id.enrollmentInstrucitons);
-        textView.setText(knurldInstrucitons);
+        setKnurldInstructions(knurldInstrucitons);
 
         setButtonHandlers();
         enableButtons(false);
@@ -58,6 +56,11 @@ public class RecordWAVActivity extends Activity{
         bufferSize = AudioRecord.getMinBufferSize(8000,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
+    }
+
+    private void setKnurldInstructions(String instructions) {
+        TextView text = (TextView)findViewById(R.id.enrollmentInst);
+        text.setText(instructions);
     }
 
     private void setButtonHandlers() {
@@ -82,7 +85,6 @@ public class RecordWAVActivity extends Activity{
             file.mkdirs();
         }
 
-//        return (file.getAbsolutePath() + "/" + System.currentTimeMillis() + AUDIO_RECORDER_FILE_EXT_WAV);
         return (file.getAbsolutePath() + "/" + fileName + AUDIO_RECORDER_FILE_EXT_WAV);
     }
 
@@ -131,7 +133,6 @@ public class RecordWAVActivity extends Activity{
         try {
             os = new FileOutputStream(filename);
         } catch (FileNotFoundException e) {
-// TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -197,8 +198,6 @@ public class RecordWAVActivity extends Activity{
             out = new FileOutputStream(outFilename);
             totalAudioLen = in.getChannel().size();
             totalDataLen = totalAudioLen + 36;
-
-//            AppLog.logString("File size: " + totalDataLen);
 
             WriteWaveFileHeader(out, totalAudioLen, totalDataLen,
                     longSampleRate, channels, byteRate);
@@ -276,7 +275,6 @@ public class RecordWAVActivity extends Activity{
         public void onClick(View v) {
             switch(v.getId()){
                 case R.id.btnStart:{
-//                    AppLog.logString("Start Recording");
 
                     enableButtons(true);
                     startRecording();
@@ -284,7 +282,6 @@ public class RecordWAVActivity extends Activity{
                     break;
                 }
                 case R.id.btnStop:{
-//                    AppLog.logString("Start Recording");
 
                     enableButtons(false);
                     stopRecording();

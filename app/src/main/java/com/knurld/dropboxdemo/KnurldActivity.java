@@ -136,7 +136,15 @@ public class KnurldActivity extends Activity {
 
     public void recordEnrollment(View view) {
         Intent intent = new Intent(this, RecordWAVActivity.class);
-        String vocab = knurldService.getAppModel().getVocabulary().toString();
+        JSONArray vocabArray = knurldService.getAppModel().getVocabulary();
+        String vocab = "";
+        for (int i = 0; i < vocabArray.length(); i++) {
+            try {
+                vocab += vocabArray.getString(i) + " ";
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         intent.putExtra(KNURLD_INSTRUCTIONS, vocab);
 
         startActivity(intent);
@@ -181,7 +189,7 @@ public class KnurldActivity extends Activity {
                         }
                         else {
                             loadingWindow.dismiss();
-                            showMessage(layoutView, "Enrollment failed, please try again");
+                            showMessage(layoutView, "Enrollment failed, please record enrollment again");
                         }
                     }
                 });

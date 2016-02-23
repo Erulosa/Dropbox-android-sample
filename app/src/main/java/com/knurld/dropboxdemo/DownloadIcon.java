@@ -71,7 +71,6 @@ public class DownloadIcon {
         }
         @Override
         protected Bitmap doInBackground(Void... params) {
-            DropboxAPI.Entry existingEntry = null;
             Bitmap image = null;
             try {
                 DropboxAPI.DropboxInputStream dis = mDBApi.getThumbnailStream(path, DropboxAPI.ThumbSize.ICON_256x256, DropboxAPI.ThumbFormat.JPEG);
@@ -139,7 +138,6 @@ public class DownloadIcon {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            DropboxAPI.Entry existingEntry = null;
             Bitmap image = null;
             image = BitmapFactory.decodeResource(context.getResources(), R.drawable.folder);
 
@@ -179,7 +177,6 @@ public class DownloadIcon {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            DropboxAPI.Entry existingEntry = null;
             Bitmap image = null;
             image = BitmapFactory.decodeResource(context.getResources(), R.drawable.document);
 

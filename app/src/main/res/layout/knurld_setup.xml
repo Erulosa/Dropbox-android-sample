@@ -6,7 +6,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="setEnrollment"
+        android:text="Set Enrollment"
         android:id="@+id/setEnrollment"
         android:onClick="setKnurldEnrollment"
         android:layout_marginBottom="51dp"
@@ -16,7 +16,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="updateEnrollment"
+        android:text="Finish Enrollment"
         android:id="@+id/updateEnrollment"
         android:onClick="updateKnurldEnrollment"
         android:nestedScrollingEnabled="false"
@@ -37,9 +37,26 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/enrollmentInstructions"
+        android:id="@+id/enrollmentDirections"
         android:layout_above="@+id/recordEnrollment"
         android:layout_centerHorizontal="true"
-        android:text="Enrollment Instructions..." />
+        android:text="Tap here to record your enrollment phrases" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tap here to start the enrollment process"
+        android:id="@+id/textView"
+        android:layout_above="@+id/setEnrollment"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tap here to finish the enrollment process"
+        android:id="@+id/textView2"
+        android:layout_below="@+id/recordEnrollment"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="28dp" />
 
 </RelativeLayout>

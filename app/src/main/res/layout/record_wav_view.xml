@@ -28,8 +28,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/enrollmentInstrucitons"
-        android:text="Enrollment Instructions..."
+        android:id="@+id/enrollmentInst"
+        android:text="@string/EnrollmentInstructions"
         android:layout_above="@+id/btnStart"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="73dp" />
@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/speakingInstructions"
-        android:layout_above="@+id/enrollmentInstrucitons"
+        android:layout_above="@+id/enrollmentInst"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="35dp"
         android:text="Speak each word slowly, repeating 3x, then press stop"
