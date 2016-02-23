@@ -278,16 +278,13 @@ public class KnurldService {
                 while (intervals[0] == null) {
                     try {
                         Thread.sleep(500, 0);
+                        String analysisId = new JSONObject(analysis[0]).getString("taskName");
+                        intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                    }
-                    String analysisId = "";
-                    try {
-                        analysisId = new JSONObject(analysis[0]).getString("taskName");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
                 }
             }
         });

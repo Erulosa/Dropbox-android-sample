@@ -36,35 +36,20 @@ public abstract class KnurldModelService {
     public abstract String create(String body);
     public abstract String update(String... params);
 
-    protected String getRequest(final String... params) {
-
+    protected String request(final String method, final String... params) {
         final String[] response = {null, null};
 
         Thread requestThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                response[0] = GET(params);
-            }
-        });
-        requestThread.start();
-
-        try {
-            requestThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return response[0];
-    }
-
-    protected String postRequest(final String... params) {
-
-        final String[] response = {null, null};
-
-        Thread requestThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                response[0] = POST(params);
+                switch (method) {
+                    case "GET":
+                        response[0] = GET(params);
+                        break;
+                    case "POST":
+                        response[0] = POST(params);
+                        break;
+                }
             }
         });
         requestThread.start();
@@ -141,90 +126,35 @@ public abstract class KnurldModelService {
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setDoInput(true);
+            urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
+            urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
 
-            if (method.contains("enrollment") && urlStringParams != "") {
+            if ((method.contains("enrollment") || method.contains("verification")) && urlStringParams != "") {
                 String boundary = "Nonce";
 
                 urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
-                urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
+
                 urlConnection.setRequestMethod("POST");
                 urlConnection.connect();
 
                 OutputStream outputStream = urlConnection.getOutputStream();
 
-                String filePath = Environment.getExternalStorageDirectory().getPath();
-                filePath = filePath + "/AudioRecorder/";
+                String filePath = Environment.getExternalStorageDirectory().getPath() + "/AudioRecorder/";
                 JSONObject jsonBody = new JSONObject(body);
-                String filename = "enrollment.wav";
+                String filename = method + ".wav";
                 file = new File(filePath, filename);
 
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
 
                 writer.append("--" + boundary).append(LINE_FEED);
                 writer.append("Content-Disposition: form-data; name=\"content\"").append(LINE_FEED);
-//                writer.append("Content-Type: application/json").append(LINE_FEED);
                 writer.append(LINE_FEED);
                 writer.append(body).append(LINE_FEED);
                 writer.flush();
 
-
-                String name = "enrollment.wav";
                 writer.append("--" + boundary).append(LINE_FEED);
-                writer.append("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"").append(LINE_FEED);
+                writer.append("Content-Disposition: form-data; name=\"" + filename + "\"; filename=\"" + filename + "\"").append(LINE_FEED);
                 writer.append("Content-Type: audio/wav").append(LINE_FEED);
-//                writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
-                writer.append(LINE_FEED);
-                writer.flush();
-
-                FileInputStream fin = new FileInputStream(file);
-                byte[] buffer = new byte[4096];
-                int bytesRead = -1;
-                while ((bytesRead = fin.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                outputStream.flush();
-                fin.close();
-
-                writer.append(LINE_FEED);
-                writer.flush();
-
-                writer.append(LINE_FEED).flush();
-                writer.append("--" + boundary + "--").append(LINE_FEED);
-                writer.close();
-
-            } else if (method.contains("verification") && urlStringParams != "") {
-                String boundary = "Nonce";
-
-                urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
-                urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
-                urlConnection.setRequestMethod("POST");
-                urlConnection.connect();
-
-                OutputStream outputStream = urlConnection.getOutputStream();
-
-                String filePath = Environment.getExternalStorageDirectory().getPath();
-                filePath = filePath + "/AudioRecorder/";
-                JSONObject jsonBody = new JSONObject(body);
-                String filename = "verification.wav";
-                file = new File(filePath, filename);
-
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
-
-                writer.append("--" + boundary).append(LINE_FEED);
-                writer.append("Content-Disposition: form-data; name=\"content\"").append(LINE_FEED);
-//                writer.append("Content-Type: application/json").append(LINE_FEED);
-                writer.append(LINE_FEED);
-                writer.append(body).append(LINE_FEED);
-                writer.flush();
-
-
-                String name = "verification.wav";
-                writer.append("--" + boundary).append(LINE_FEED);
-                writer.append("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"").append(LINE_FEED);
-                writer.append("Content-Type: audio/wav").append(LINE_FEED);
-//                writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
                 writer.append(LINE_FEED);
                 writer.flush();
 
@@ -246,8 +176,6 @@ public abstract class KnurldModelService {
 
             } else {
                 urlConnection.setRequestProperty("Content-Type", "application/json");
-                urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
-                urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
                 urlConnection.setRequestMethod("POST");
                 urlConnection.connect();
 
@@ -256,8 +184,6 @@ public abstract class KnurldModelService {
                 out.flush();
                 out.close();
             }
-
-
 
             int HttpResult = urlConnection.getResponseCode();
 
