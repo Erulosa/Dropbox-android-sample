@@ -52,9 +52,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     public KnurldService knurldService;
 
-
-    private String knurldAccessToken;
-
     private static final String KNURLD_TOKEN = "KNURLD_TOKEN";
     private static final String KNURLD_APP_MODEL = "KNURLD_APP_MODEL";
     private static final String KNURLD_CONSUMER = "KNURLD_CONSUMER";
@@ -288,25 +285,19 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     protected void getFolder(String folderPath){
         Intent intent = new Intent(this, DropboxActivity.class);
         intent.putExtra(FILE_PATH, folderPath);
-        if (knurldService.getClientToken() != null) {
-            intent.putExtra(KNURLD_TOKEN, knurldService.getClientToken());
-        }
-        if (knurldService.getAppModel() != null) {
-            intent.putExtra(KNURLD_APP_MODEL, knurldService.getAppModel().appModelId);
-        }
-        if (knurldService.getConsumerModel() != null) {
-            intent.putExtra(KNURLD_CONSUMER, knurldService.getConsumerModel().consumerModelId);
-        }
-        if (knurldService.getEnrollmentModel() != null) {
-            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().enrollmentId);
-        }
-
+        putStringExtra(intent);
         startActivity(intent);
     }
 
     protected void getFile(String filePath){
         Intent intent = new Intent(this, ViewItemActivity.class);
         intent.putExtra(FILE_PATH, filePath);
+        putStringExtra(intent);
+        startActivity(intent);
+    }
+
+    // Pass Id's from KnurldService to next activity
+    private Intent putStringExtra(Intent intent) {
         if (knurldService.getClientToken() != null) {
             intent.putExtra(KNURLD_TOKEN, knurldService.getClientToken());
         }
@@ -319,7 +310,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         if (knurldService.getEnrollmentModel() != null) {
             intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().enrollmentId);
         }
-        startActivity(intent);
+        return intent;
     }
 
     @Override
@@ -344,8 +335,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
                 iconDownload.setDoc(path, mDBApi);
             } else if (type.startsWith("image") || type.startsWith("video")){
                 iconDownload.downloadThumb(path, fileName, mDBApi);
-            } else {
-//                iconDownload.setPlaceholder(path, fileName, mDBApi);
             }
 
             if (i+1 == dropboxService.dropboxItem.entry.contents.size()) {
@@ -354,6 +343,8 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         }
     }
 
+
+    // Get Dropbox username when user logs in, use this to create/get Knurld Consumer
     public String getDropboxUsername() {
         String dbx_uid = null;
         SharedPreferences preferences = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);

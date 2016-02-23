@@ -87,10 +87,6 @@ public abstract class KnurldModelService {
 
         String urlString = "https://api.knurld.io/v1/" + method + urlStringParams;
 
-        if (method.contains("verification") && urlStringParams == "") {
-            method = "setupVerification";
-        }
-
         try {
             URL url = new URL(urlString);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -135,15 +131,10 @@ public abstract class KnurldModelService {
         String urlStringParams = (params[1] == null) ? "" : "/" + params[1];
         String body = params[2];
         File file;
-        if (method.contains("endpointAnalysis")) {
-            method = "endpointAnalysis/file";
-        }
+
         String urlString = "https://api.knurld.io/v1/" + method + urlStringParams;
         String[] result = {"", ""};
 
-        if (method.contains("verification") && urlStringParams == "") {
-            method = "setupVerification";
-        }
 
         try {
             URL url = new URL(urlString);
@@ -152,7 +143,6 @@ public abstract class KnurldModelService {
             urlConnection.setDoInput(true);
 
             if (method.contains("enrollment") && urlStringParams != "") {
-                method = "setupEnrollment";
                 String boundary = "Nonce";
 
                 urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);

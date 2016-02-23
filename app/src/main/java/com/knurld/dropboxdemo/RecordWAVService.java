@@ -113,7 +113,6 @@ public class RecordWAVService {
             file.mkdirs();
         }
 
-//        return (file.getAbsolutePath() + "/" + System.currentTimeMillis() + AUDIO_RECORDER_FILE_EXT_WAV);
         return (file.getAbsolutePath() + "/" + fileName + AUDIO_RECORDER_FILE_EXT_WAV);
     }
 
@@ -162,7 +161,6 @@ public class RecordWAVService {
         try {
             os = new FileOutputStream(filename);
         } catch (FileNotFoundException e) {
-// TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -228,8 +226,6 @@ public class RecordWAVService {
             out = new FileOutputStream(outFilename);
             totalAudioLen = in.getChannel().size();
             totalDataLen = totalAudioLen + 36;
-
-//            AppLog.logString("File size: " + totalDataLen);
 
             WriteWaveFileHeader(out, totalAudioLen, totalDataLen,
                     longSampleRate, channels, byteRate);

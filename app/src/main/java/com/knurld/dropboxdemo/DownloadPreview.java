@@ -52,7 +52,6 @@ public class DownloadPreview {
         }
         @Override
         protected Bitmap doInBackground(Void... params) {
-            DropboxAPI.Entry existingEntry = null;
             Bitmap image = null;
             try {
                 DropboxAPI.DropboxInputStream dis = mDBApi.getThumbnailStream(path, DropboxAPI.ThumbSize.BESTFIT_960x640, DropboxAPI.ThumbFormat.PNG);
@@ -102,7 +101,6 @@ public class DownloadPreview {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            DropboxAPI.Entry existingEntry = null;
             Bitmap image;
             image = BitmapFactory.decodeResource(context.getResources(), R.drawable.document);
 
