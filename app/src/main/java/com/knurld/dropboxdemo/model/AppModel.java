@@ -100,21 +100,21 @@ public class AppModel extends KnurldModelService {
 
     @Override
     public String index() {
-        return getRequest("app-models", null);
+        return request("GET", "app-models", null);
     }
 
     @Override
     public String show(String urlParam) {
-        return getRequest("app-models", urlParam);
+        return request("GET", "app-models", urlParam);
     }
 
     @Override
     public String create(String body) {
-        return postRequest("app-models", null, body);
+        return request("POST", "app-models", null, body);
     }
 
     @Override
     public String update(String... params) {
-        return postRequest("app-models", params[0], params[1]);
+        return request("GET", "app-models", params[0], params[1]);
     }
 }

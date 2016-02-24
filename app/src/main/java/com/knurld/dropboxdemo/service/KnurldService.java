@@ -194,8 +194,8 @@ public class KnurldService {
 
         VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromResponse(verificationModel.create(body.toString()));
-        verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-        return new String[]{verificationModel.phrases, verificationModel.activeVerification, verificationModel.phrasesArray.toString()};
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.verificationId));
+        return new String[]{verificationModel.phrases, verificationModel.verificationId, verificationModel.phrasesArray.toString()};
     }
 
     // Set up and run a knurld verification
@@ -219,44 +219,26 @@ public class KnurldService {
         JSONArray intervals = runAnalysis(body);
 
         // Add phrases to analysis intervals
-        JSONArray vocabArray = null;
         try {
-            vocabArray = new JSONArray(vocab);
+            JSONArray vocabArray = new JSONArray(vocab);
+            JSONObject analysisObj = prepareAnalysisJSON(intervals, vocabArray, 1, vocabArray.length());
+
+            // Return false if there is a bad analysis, re-record enrollment and try again
+            if (analysisObj == null) {
+                return false;
+            }
+
+            // Update verification with valid intervals from analysis, then set verification
+            verificationModel.buildFromResponse(verificationModel.update(verificationId, analysisObj.toString()));
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject analysisObj = prepareAnalysisJSON(intervals, vocabArray, 1, vocabArray.length());
 
-        // Return false if there is a bad analysis, re-record enrollment and try again
-        if (analysisObj == null) {
-            return false;
-        }
-
-        // Update enrollment with valid intervals from analysis, then set enrollment
-        verificationModel.buildFromResponse(verificationModel.update(verificationId, analysisObj.toString()));
-        verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-
-        Thread verificationThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                // Poll for enrollment to finish every 0.5 seconds until complete
-                while (!verificationModel.verified && !verificationModel.failed && !verificationModel.completed) {
-                    try {
-                        Thread.sleep(500, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-                }
-            }
-        });
-        verificationThread.start();
-
-        try {
-            verificationThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // Get updated verification, if it is still processing, poll until complete/failed
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.verificationId));
+        while (!verificationModel.verified && !verificationModel.failed && !verificationModel.completed) {
+            verificationModel.buildFromResponse(verificationModel.show(verificationModel.verificationId));
         }
 
         return verificationModel.verified;
@@ -272,19 +254,20 @@ public class KnurldService {
         Thread analysisThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                analysis[0] = knurldAnalysisService.startAnalysis(body.toString());
+                try {
+                    analysis[0] = knurldAnalysisService.startAnalysis(body.toString());
+                    String analysisId = new JSONObject(analysis[0]).getString("taskName");
+                    intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
 
-                // Poll for analysis to finish every 0.5 seconds until intervals are returned
-                while (intervals[0] == null) {
-                    try {
-                        Thread.sleep(500, 0);
-                        String analysisId = new JSONObject(analysis[0]).getString("taskName");
-                        intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    // Poll for analysis to finish every 0.5 seconds until intervals are returned
+                    while (intervals[0] == null) {
+                            Thread.sleep(300, 0);
+                            intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
                     }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
         });

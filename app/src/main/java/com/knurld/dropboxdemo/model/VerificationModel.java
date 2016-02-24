@@ -21,33 +21,16 @@ public class VerificationModel extends KnurldModelService {
     public boolean isActive;
     public String phrases;
     public JSONArray phrasesArray;
-
     private String href;
-
     public String verificationId;
-    public String activeVerification;
-
-
-    public String getVerifivationWAV() {
-        return verifivationWAV;
-    }
-
-    public void setVerifivationWAV(String verifivationWAV) {
-        this.verifivationWAV = verifivationWAV;
-    }
-
-    public String getHref() {
-        return href;
-    }
 
     public void setHref(String href) {
         this.verificationId = href.substring(href.lastIndexOf("/") + 1);
         this.href = href;
     }
 
-    public void setVerification(String href) {
-        this.activeVerification = href.substring(href.lastIndexOf("/") + 1);
-        this.href = href;
+    public String getHref() {
+        return href;
     }
 
     @Override
@@ -58,64 +41,27 @@ public class VerificationModel extends KnurldModelService {
         try {
             jsonParam = new JSONObject(response);
             JSONArray items = jsonParam.has("items") ? jsonParam.getJSONArray("items") : null;
+            JSONObject item = null;
+
+            // Check if response has a list of items or is a singular item
             if (items != null && items.length() > 0) {
-                JSONObject item = (JSONObject) items.get(0);
-                intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
-                JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
-                if (instructions != null) {
-                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
-                    if (data != null) {
-                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
-                        phrases = "";
-                        if (phrasesArray != null) {
-                            for (int i = 0; i < phrasesArray.length(); i++) {
-                                phrases += phrasesArray.getString(i) + " ";
-                            }
-                        }
-                    }
-                }
-                failed = item.has("status") && item.getString("status").contains("failed");
-                verified = item.has("verified") && item.getString("verified").contains("true");
-                completed = item.has("status") && item.getString("status").contains("completed");
-                if (!completed) {
-                    isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
-                }
-                String h = item.has("href") ? item.getString("href") : null;
-                if (h != null && isActive) {
-                    setHref(h);
-                }
+                item = (JSONObject) items.get(0);
             } else {
-                intervals = jsonParam.has("intervals") ? jsonParam.getJSONArray("intervals") : null;
-                JSONObject instructions = jsonParam.has("instructions") ? jsonParam.getJSONObject("instructions") : null;
-                if (instructions != null) {
-                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
-                    if (data != null) {
-                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
-                        phrases = "";
-                        if (phrasesArray != null) {
-                            for (int i = 0; i < phrasesArray.length(); i++) {
-                                phrases += phrasesArray.getString(i) + " ";
-                            }
-                        }
-
-                    }
-                }
-
-                failed = jsonParam.has("status") && jsonParam.getString("status").contains("failed");
-                verified = jsonParam.has("verified") && jsonParam.getString("verified").contains("true");
-                completed = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
-                if (!completed) {
-                    isActive = jsonParam.has("status") && jsonParam.getString("status").contains("initialized");
-                }
-                String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
-                if (this.activeVerification != null) {
-                    setHref(h);
-                }
-                if (h != null && !completed) {
-                    setVerification(h);
-                }
+                item = jsonParam;
             }
 
+            intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
+            JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
+            JSONObject data = (instructions != null) && instructions.has("data") ? instructions.getJSONObject("data") : null;
+            phrasesArray = ((data != null) && data.has("phrases")) ? data.getJSONArray("phrases") : null;
+            phrases = phrasesArray != null ? phrasesArray.join(", ") : null;
+            failed = item.has("status") && item.getString("status").contains("failed");
+            verified = item.has("verified") && item.getString("verified").contains("true");
+            completed = item.has("status") && item.getString("status").contains("completed");
+            String h = item.has("href") ? item.getString("href") : null;
+            if (h != null) {
+                setHref(h);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -133,21 +79,21 @@ public class VerificationModel extends KnurldModelService {
 
     @Override
     public String index() {
-        return getRequest("verifications", null);
+        return request("GET", "verifications", null);
     }
 
     @Override
     public String show(String urlParam) {
-        return getRequest("verifications", urlParam);
+        return request("GET", "verifications", urlParam);
     }
 
     @Override
     public String create(String body) {
-        return postRequest("verifications", null, body);
+        return request("POST", "verifications", null, body);
     }
 
     @Override
     public String update(String... params) {
-        return postRequest("verifications", params[0], params[1]);
+        return request("POST", "verifications", params[0], params[1]);
     }
 }

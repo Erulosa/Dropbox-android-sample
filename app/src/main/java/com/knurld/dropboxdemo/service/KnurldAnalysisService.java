@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -17,6 +18,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by andyshear on 2/16/16.
@@ -35,44 +38,23 @@ public class KnurldAnalysisService {
     }
 
     public JSONArray getAnalysis(String urlParam) {
-        StringBuilder sb = new StringBuilder();
-        InputStream in = null;
         String result = "";
-
         String urlString = "https://api.knurld.io/v1/endpointAnalysis/" + urlParam;
-
 
         try {
             URL url = new URL(urlString);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-//            urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
             urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
-            int HttpResult = urlConnection.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK){
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream(),"utf-8"));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
-
-                System.out.println("" + sb.toString());
-            } else{
-                System.out.println(urlConnection.getResponseMessage());
-            }
-
+            result = getHTTPResponse(urlConnection);
         } catch (Exception e) {
             Log.d("Error", e.getMessage());
-            JSONArray res = null;
-            return res;
+            result = null;
         }
 
-        result = sb.toString();
         JSONObject jsonParam = null;
         JSONArray intervals = null;
         try {
@@ -86,22 +68,13 @@ public class KnurldAnalysisService {
     }
 
     public String startAnalysis(String body) {
-        StringBuilder sb = new StringBuilder();
-
-        String method = "endpointAnalysis";
-        File file;
-
         String urlString = "https://api.knurld.io/v1/endpointAnalysis/file";
-        String result = "";
-
 
         try {
             URL url = new URL(urlString);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setDoInput(true);
-
-
             String boundary = "===" + System.currentTimeMillis() + "===";
 
             urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
@@ -116,7 +89,7 @@ public class KnurldAnalysisService {
             filePath = filePath + "/AudioRecorder/";
             JSONObject jsonBody = new JSONObject(body);
             String fileName = jsonBody.getString("filedata");
-            file = new File(filePath, fileName);
+            File file = new File(filePath, fileName);
 
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
             String name = "filedata";
@@ -150,33 +123,33 @@ public class KnurldAnalysisService {
             writer.append("--" + boundary + "--").append(LINE_FEED);
             writer.close();
 
-
-
-            int HttpResult = urlConnection.getResponseCode();
-
-            if (HttpResult == HttpURLConnection.HTTP_OK || HttpResult == HttpURLConnection.HTTP_CREATED || HttpResult == HttpURLConnection.HTTP_ACCEPTED){
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream(),"utf-8"));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-                br.close();
-
-                Log.d("ResponseMessage", sb.toString());
-            } else{
-                method = "failed";
-                Log.d("ResponseMessage", urlConnection.getResponseMessage());
-            }
-
+            return getHTTPResponse(urlConnection);
         } catch (Exception e) {
             Log.d("Error", e.getMessage());
-            result = e.getMessage();
-            return result;
+            return e.getMessage();
         }
+    }
 
-        result = sb.toString();
+    private String getHTTPResponse(HttpURLConnection urlConnection) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        Integer[] headers = {HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED};
+        if (contains(headers, urlConnection.getResponseCode())) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    urlConnection.getInputStream(),"utf-8"));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            br.close();
 
-        return result;
+            Log.d("ResponseMessage", sb.toString());
+        } else{
+            Log.d("ResponseMessage", urlConnection.getResponseMessage());
+        }
+        return sb.toString();
+    }
+
+    private boolean contains(final Integer[] array, final Integer key) {
+        return Arrays.asList(array).contains(key);
     }
 }

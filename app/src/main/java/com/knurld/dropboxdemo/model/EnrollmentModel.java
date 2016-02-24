@@ -44,18 +44,21 @@ public class EnrollmentModel extends KnurldModelService {
             if (items != null && items.length() > 0) {
                 JSONObject item = (JSONObject) items.get(items.length()-1);
                 JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
-                if (instructions != null) {
-                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
-                    if (data != null) {
-                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
-                        phrases = "";
-                        if (phrasesArray != null) {
-                            for (int i = 0; i < phrasesArray.length(); i++) {
-                                phrases += phrasesArray.getString(i) + " ";
-                            }
-                        }
-                    }
-                }
+                JSONObject data = (instructions != null) && instructions.has("data") ? instructions.getJSONObject("data") : null;
+                phrasesArray = ((data != null) && data.has("phrases")) ? data.getJSONArray("phrases") : null;
+                phrases = phrasesArray != null ? phrasesArray.join(", ") : null;
+//                if (instructions != null) {
+////                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
+//                    if (data != null) {
+//                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
+//                        phrases = phrasesArray.join(", ");
+////                        if (phrasesArray != null) {
+////                            for (int i = 0; i < phrasesArray.length(); i++) {
+////                                phrases += phrasesArray.getString(i) + " ";
+////                            }
+////                        }
+//                    }
+//                }
                 failed = item.has("status") && item.getString("status").contains("failed");
                 enrolled = item.has("status") && item.getString("status").contains("completed");
                 intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
@@ -65,18 +68,21 @@ public class EnrollmentModel extends KnurldModelService {
                 }
             } else {
                 JSONObject instructions = jsonParam.has("instructions") ? jsonParam.getJSONObject("instructions") : null;
-                if (instructions != null) {
-                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
-                    if (data != null) {
-                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
-                        phrases = "";
-                        if (phrasesArray != null) {
-                            for (int i = 0; i < phrasesArray.length(); i++) {
-                                phrases += phrasesArray.getString(i) + " ";
-                            }
-                        }
-                    }
-                }
+                JSONObject data = (instructions != null) && instructions.has("data") ? instructions.getJSONObject("data") : null;
+                phrasesArray = ((data != null) && data.has("phrases")) ? data.getJSONArray("phrases") : null;
+                phrases = phrasesArray != null ? phrasesArray.join(", ") : null;
+//                if (instructions != null) {
+//                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
+//                    if (data != null) {
+//                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
+//                        phrases = phrasesArray.join(", ");
+////                        if (phrasesArray != null) {
+////                            for (int i = 0; i < phrasesArray.length(); i++) {
+////                                phrases += phrasesArray.getString(i) + " ";
+////                            }
+////                        }
+//                    }
+//                }
                 enrolled = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
                 failed = jsonParam.has("status") && jsonParam.getString("status").contains("failed");
                 intervals = jsonParam.has("intervals") ? jsonParam.getJSONArray("intervals") : null;
@@ -103,21 +109,21 @@ public class EnrollmentModel extends KnurldModelService {
 
     @Override
     public String index() {
-        return getRequest("enrollments", null);
+        return request("GET", "enrollments", null);
     }
 
     @Override
     public String show(String urlParam) {
-        return getRequest("enrollments", urlParam);
+        return request("GET", "enrollments", urlParam);
     }
 
     @Override
     public String create(String body) {
-        return postRequest("enrollments", null, body);
+        return request("POST", "enrollments", null, body);
     }
 
     @Override
     public String update(String... params) {
-        return postRequest("enrollments", params[0], params[1]);
+        return request("POST", "enrollments", params[0], params[1]);
     }
 }
