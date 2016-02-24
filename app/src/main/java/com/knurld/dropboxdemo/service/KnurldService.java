@@ -117,7 +117,7 @@ public class KnurldService {
 
         EnrollmentModel enrollmentModel = new EnrollmentModel();
         enrollmentModel.buildFromResponse(enrollmentModel.create(body.toString()));
-        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.resourceId));
         setEnrollmentModel(enrollmentModel);
     }
 
@@ -149,21 +149,21 @@ public class KnurldService {
         }
 
         // Update enrollment with valid intervals from analysis, then set enrollment
-        enrollmentModel.buildFromResponse(enrollmentModel.update(enrollmentModel.enrollmentId, analysisObj.toString()));
-        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+        enrollmentModel.buildFromResponse(enrollmentModel.update(enrollmentModel.resourceId, analysisObj.toString()));
+        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.resourceId));
 
         Thread enrollmentThread = new Thread(new Runnable() {
             @Override
             public void run() {
 
                 // Poll for enrollment to finish every 0.5 seconds until complete
-                while (!enrollmentModel.enrolled && !enrollmentModel.failed) {
+                while (!enrollmentModel.completed && !enrollmentModel.failed) {
                     try {
                         Thread.sleep(500, 0);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+                    enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.resourceId));
                 }
             }
         });
@@ -177,7 +177,7 @@ public class KnurldService {
 
 
         setEnrollmentModel(enrollmentModel);
-        return enrollmentModel.enrolled;
+        return enrollmentModel.completed;
     }
 
     public String[] startVerification() {
@@ -194,8 +194,8 @@ public class KnurldService {
 
         VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromResponse(verificationModel.create(body.toString()));
-        verificationModel.buildFromResponse(verificationModel.show(verificationModel.verificationId));
-        return new String[]{verificationModel.phrases, verificationModel.verificationId, verificationModel.phrasesArray.toString()};
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.resourceId));
+        return new String[]{verificationModel.phrases, verificationModel.resourceId, verificationModel.phrasesArray.toString()};
     }
 
     // Set up and run a knurld verification
@@ -236,9 +236,9 @@ public class KnurldService {
         }
 
         // Get updated verification, if it is still processing, poll until complete/failed
-        verificationModel.buildFromResponse(verificationModel.show(verificationModel.verificationId));
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.resourceId));
         while (!verificationModel.verified && !verificationModel.failed && !verificationModel.completed) {
-            verificationModel.buildFromResponse(verificationModel.show(verificationModel.verificationId));
+            verificationModel.buildFromResponse(verificationModel.show(verificationModel.resourceId));
         }
 
         return verificationModel.verified;

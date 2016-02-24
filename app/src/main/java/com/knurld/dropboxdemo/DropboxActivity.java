@@ -308,7 +308,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
             intent.putExtra(KNURLD_CONSUMER, knurldService.getConsumerModel().consumerModelId);
         }
         if (knurldService.getEnrollmentModel() != null) {
-            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().enrollmentId);
+            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().resourceId);
         }
         return intent;
     }
