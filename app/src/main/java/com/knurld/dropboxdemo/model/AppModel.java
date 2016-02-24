@@ -53,36 +53,19 @@ public class AppModel extends KnurldModelService {
 
     @Override
     public void buildFromResponse(String response) {
-        JSONObject jsonParam = null;
 
         try {
-            jsonParam = new JSONObject(response);
+            JSONObject jsonParam = new JSONObject(response);
             JSONArray items = jsonParam.has("items") ? jsonParam.getJSONArray("items") : null;
-            if (items != null && items.length() > 0) {
-                JSONObject item = (JSONObject) items.get(items.length()-1);
-                String h = item.has("href") ? item.getString("href") : null;
-                JSONArray vocab = item.has("vocabulary") ? item.getJSONArray("vocabulary") : null;
-                enrollmentRepeats = item.has("enrollmentRepeats") ? item.getInt("enrollmentRepeats") : null;
-                verificationLength = item.has("verificationLength") ? item.getInt("verificationLength") : null;
-                if (h != null) {
-                    setHref(h);
-                }
-                if (vocab != null) {
-                    setVocabulary(vocab);
-                }
-            } else {
-                String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
-                enrollmentRepeats = jsonParam.has("enrollmentRepeats") ? jsonParam.getInt("enrollmentRepeats") : null;
-                verificationLength = jsonParam.has("verificationLength") ? jsonParam.getInt("verificationLength") : null;
-                JSONArray vocab = jsonParam.has("vocabulary") ? jsonParam.getJSONArray("vocabulary") : null;
-                if (h != null) {
-                    setHref(h);
-                }
-                if (vocab != null) {
-                    setVocabulary(vocab);
-                }
-            }
 
+            // Check if response has a list of items or is a singular item
+            JSONObject item = (items != null && items.length() > 0) ? (JSONObject)items.get(0) : jsonParam;
+
+            enrollmentRepeats = item.has("enrollmentRepeats") ? item.getInt("enrollmentRepeats") : null;
+            verificationLength = item.has("verificationLength") ? item.getInt("verificationLength") : null;
+
+            if (item.has("href")) { setHref(item.getString("href")); }
+            if (item.has("vocabulary")) { setVocabulary(item.getJSONArray("vocabulary")); }
         } catch (JSONException e) {
             e.printStackTrace();
         }
