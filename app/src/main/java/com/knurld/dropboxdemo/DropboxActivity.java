@@ -145,19 +145,20 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     protected void onResume() {
         super.onResume();
+        // Get list of locked files
         lockedFiles = ((ArrayList<String>) LockedItems.getItems(this, "locked") == null) ? new ArrayList<String>() : (ArrayList<String>) LockedItems.getItems(this, "locked");
     }
 
     protected void onPause() {
         super.onPause();
-        for (DropboxAPI.Entry item : dropboxService.dropboxItem.entry.contents) {
-            if (item.readOnly && !lockedFiles.contains(item.fileName())) {
-                lockedFiles.add(item.fileName());
+        // Update list of locked files, removing any repeats
+        ArrayList<String> updatedLock = new ArrayList<String>();
+        for (String file : lockedFiles) {
+            if (!updatedLock.contains(file)) {
+                updatedLock.add(file);
             }
         }
-//        TODO reset saved locked files, need better way to clear files
-//        lockedFiles = new ArrayList<String>();
-        LockedItems.saveItems(this, "locked", lockedFiles);
+        LockedItems.saveItems(this, "locked", updatedLock);
     }
 
     public void toggleLockOn(final String item, String message, final Boolean locked, final String verificationId ,final String phrases) {
@@ -230,11 +231,11 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     public void setItem(boolean locked, String item) {
         if (locked) {
-            lockedFiles.remove(item);
+            lockedFiles.add(item);
             LockedItems.saveItems(this, "locked", lockedFiles);
             Toast.makeText(context, "Item is Locked", Toast.LENGTH_SHORT).show();
         } else {
-            lockedFiles.add(item);
+            lockedFiles.remove(item);
             LockedItems.saveItems(this, "locked", lockedFiles);
             Toast.makeText(context, "Item is Unlocked", Toast.LENGTH_SHORT).show();
         }
@@ -242,7 +243,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     @Override
     public void processFinish(String method, String output) {
-
 
         if (output.equals("finished")) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
@@ -259,7 +259,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
             ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem, knurldService);
             listView = (ListView)findViewById(R.id.list);
             listView.setAdapter(adapter);
-
 
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
