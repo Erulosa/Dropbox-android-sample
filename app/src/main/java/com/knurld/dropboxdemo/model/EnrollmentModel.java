@@ -36,62 +36,29 @@ public class EnrollmentModel extends KnurldModelService {
     @Override
     public void buildFromResponse(String response) {
 
-        JSONObject jsonParam = null;
-
         try {
-            jsonParam = new JSONObject(response);
+            JSONObject jsonParam = new JSONObject(response);
             JSONArray items = jsonParam.has("items") ? jsonParam.getJSONArray("items") : null;
+            JSONObject item = null;
+
+            // Check if response has a list of items or is a singular item
             if (items != null && items.length() > 0) {
-                JSONObject item = (JSONObject) items.get(items.length()-1);
-                JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
-                JSONObject data = (instructions != null) && instructions.has("data") ? instructions.getJSONObject("data") : null;
-                phrasesArray = ((data != null) && data.has("phrases")) ? data.getJSONArray("phrases") : null;
-                phrases = phrasesArray != null ? phrasesArray.join(", ") : null;
-//                if (instructions != null) {
-////                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
-//                    if (data != null) {
-//                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
-//                        phrases = phrasesArray.join(", ");
-////                        if (phrasesArray != null) {
-////                            for (int i = 0; i < phrasesArray.length(); i++) {
-////                                phrases += phrasesArray.getString(i) + " ";
-////                            }
-////                        }
-//                    }
-//                }
-                failed = item.has("status") && item.getString("status").contains("failed");
-                enrolled = item.has("status") && item.getString("status").contains("completed");
-                intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
-                String h = item.has("href") ? item.getString("href") : null;
-                if (h != null) {
-                    setHref(h);
-                }
+                item = (JSONObject) items.get(0);
             } else {
-                JSONObject instructions = jsonParam.has("instructions") ? jsonParam.getJSONObject("instructions") : null;
-                JSONObject data = (instructions != null) && instructions.has("data") ? instructions.getJSONObject("data") : null;
-                phrasesArray = ((data != null) && data.has("phrases")) ? data.getJSONArray("phrases") : null;
-                phrases = phrasesArray != null ? phrasesArray.join(", ") : null;
-//                if (instructions != null) {
-//                    JSONObject data = instructions.has("data") ? instructions.getJSONObject("data") : null;
-//                    if (data != null) {
-//                        phrasesArray = data.has("phrases") ? data.getJSONArray("phrases") : null;
-//                        phrases = phrasesArray.join(", ");
-////                        if (phrasesArray != null) {
-////                            for (int i = 0; i < phrasesArray.length(); i++) {
-////                                phrases += phrasesArray.getString(i) + " ";
-////                            }
-////                        }
-//                    }
-//                }
-                enrolled = jsonParam.has("status") && jsonParam.getString("status").contains("completed");
-                failed = jsonParam.has("status") && jsonParam.getString("status").contains("failed");
-                intervals = jsonParam.has("intervals") ? jsonParam.getJSONArray("intervals") : null;
-                String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
-                if (h != null) {
-                    setHref(h);
-                }
+                item = jsonParam;
             }
 
+            intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
+            JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
+            JSONObject data = (instructions != null) && instructions.has("data") ? instructions.getJSONObject("data") : null;
+            phrasesArray = ((data != null) && data.has("phrases")) ? data.getJSONArray("phrases") : null;
+            phrases = phrasesArray != null ? phrasesArray.join(", ") : null;
+            failed = item.has("status") && item.getString("status").contains("failed");
+            enrolled = item.has("status") && item.getString("status").contains("completed");
+            String h = item.has("href") ? item.getString("href") : null;
+            if (h != null) {
+                setHref(h);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

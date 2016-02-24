@@ -36,19 +36,12 @@ public class VerificationModel extends KnurldModelService {
     @Override
     public void buildFromResponse(String response) {
 
-        JSONObject jsonParam = null;
-
         try {
-            jsonParam = new JSONObject(response);
+            JSONObject jsonParam = new JSONObject(response);
             JSONArray items = jsonParam.has("items") ? jsonParam.getJSONArray("items") : null;
-            JSONObject item = null;
 
             // Check if response has a list of items or is a singular item
-            if (items != null && items.length() > 0) {
-                item = (JSONObject) items.get(0);
-            } else {
-                item = jsonParam;
-            }
+            JSONObject item = (items != null && items.length() > 0) ? (JSONObject)items.get(0) : jsonParam;
 
             intervals = item.has("intervals") ? item.getJSONArray("intervals") : null;
             JSONObject instructions = item.has("instructions") ? item.getJSONObject("instructions") : null;
