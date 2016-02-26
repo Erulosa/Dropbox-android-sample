@@ -1,5 +1,7 @@
 package com.knurld.dropboxdemo.service;
 
+import com.knurld.dropboxdemo.Config;
+import com.knurld.dropboxdemo.KnurldActivity;
 import com.knurld.dropboxdemo.model.AppModel;
 import com.knurld.dropboxdemo.model.ConsumerModel;
 import com.knurld.dropboxdemo.model.EnrollmentModel;
@@ -13,7 +15,8 @@ import org.json.JSONObject;
  * Created by andyshear on 2/15/16.
  */
 public class KnurldService {
-    // Knurld toke, Getter/Setter
+
+    // Knurld token, Getter/Setter
     private static String CLIENT_TOKEN = null;
     public String getClientToken() {
         return CLIENT_TOKEN;
@@ -48,15 +51,15 @@ public class KnurldService {
     public KnurldService() {
         CLIENT_TOKEN = requestToken();
         KnurldModelService.setClientToken(CLIENT_TOKEN);
-        setupExistingKnurldUser(null, null, null);
+        setupExistingKnurldUser(Config.APP_MODEL_ID, Config.CONSUMER_ID, null);
     }
 
     // Start knurld service by getting token, or
     // Start knurld service with existing token, pass in model Id's if they exist
-    public KnurldService(String token, String appModelId, String consumerModelId, String enrollmentModelId) {
+    public KnurldService(String token, String enrollmentModelId) {
         CLIENT_TOKEN = token == null ? requestToken() : token;
         KnurldModelService.setClientToken(CLIENT_TOKEN);
-        setupExistingKnurldUser(appModelId, consumerModelId, enrollmentModelId);
+        setupExistingKnurldUser(Config.APP_MODEL_ID, Config.CONSUMER_ID, enrollmentModelId);
     }
 
     // Start thread to request token

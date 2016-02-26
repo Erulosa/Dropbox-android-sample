@@ -3,6 +3,8 @@ package com.knurld.dropboxdemo.service;
 import android.os.Environment;
 import android.util.Log;
 
+import com.knurld.dropboxdemo.Config;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -22,7 +24,6 @@ import java.util.Arrays;
  * Created by andyshear on 2/15/16.
  */
 public abstract class KnurldModelService {
-    final static private String DEVELOPER_ID = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDQ4MTY5MDUsInJvbGUiOiJhZG1pbiIsImlkIjoiMDQ5MTg0NDUxMzc4NTgzODg1MmQ1NTBmOTIwNjk5ZjgiLCJ0ZW5hbnQiOiJ0ZW5hbnRfbXJwdGF4M25tejVobzRsMm5ycmc2MnRibTUzdGc1ZHduNXZob3ozam5yMmdpM3J2bzV5cSsrKysiLCJuYW1lIjoiYWRtaW4ifQ.2EGZ3bXCq8yaawru5uzwcqEjEHhVs96MlD9HGnF4JQZmCwc2T3efca1F480dVcQSVKc7wwOk61NlgkiDB_6NXw";
     private static String CLIENT_TOKEN;
 
     private static final String LINE_FEED = "\r\n";
@@ -74,7 +75,7 @@ public abstract class KnurldModelService {
         try {
             URL url = new URL(urlString);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
+            urlConnection.setRequestProperty("Developer-Id", "Bearer: " + Config.DEVELOPER_ID);
             urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
@@ -98,7 +99,7 @@ public abstract class KnurldModelService {
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setDoInput(true);
-            urlConnection.setRequestProperty("Developer-Id", "Bearer: " + DEVELOPER_ID);
+            urlConnection.setRequestProperty("Developer-Id", "Bearer: " + Config.DEVELOPER_ID);
             urlConnection.setRequestProperty("Authorization", "Bearer " + CLIENT_TOKEN);
 
             if ((method.contains("enrollment") || method.contains("verification")) && urlStringParams != "") {

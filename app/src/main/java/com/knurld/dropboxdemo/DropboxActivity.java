@@ -31,10 +31,6 @@ import java.util.ArrayList;
 
 public class DropboxActivity extends Activity implements AsyncResponse {
 
-    final static private String APP_KEY = "d3zx13rhlc2jbpr";
-    final static private String APP_SECRET = "rfnin8j6dr3uhuv";
-
-
     private static final String ACCOUNT_PREFS_NAME = "prefs";
     private static final String ACCESS_KEY_NAME = "ACCESS_KEY";
     private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
@@ -53,8 +49,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     public KnurldService knurldService;
 
     private static final String KNURLD_TOKEN = "KNURLD_TOKEN";
-    private static final String KNURLD_APP_MODEL = "KNURLD_APP_MODEL";
-    private static final String KNURLD_CONSUMER = "KNURLD_CONSUMER";
     private static final String KNURLD_VERIFICATION = "KNURLD_VERIFICATION";
     private static final String KNURLD_ENROLLMENT = "KNURLD_ENROLLMENT";
 
@@ -79,15 +73,13 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         lockedFiles = new ArrayList<String>();
 
         final String knurldToken = intent.getStringExtra(KNURLD_TOKEN);
-        final String knurldApp = intent.getStringExtra(KNURLD_APP_MODEL);
-        final String knurldConsumer = intent.getStringExtra(KNURLD_CONSUMER);
         final String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
 
         knurldServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                knurldService = new KnurldService(knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
+                knurldService = new KnurldService(knurldToken, knurldEnrollment);
             }
         });
         knurldServiceThread.start();
@@ -127,7 +119,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
 
     private AndroidAuthSession buildSession() {
-        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
+        AppKeyPair appKeys = new AppKeyPair(Config.APP_KEY, Config.APP_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
 
         SharedPreferences preferences = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
@@ -299,12 +291,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     private Intent putStringExtra(Intent intent) {
         if (knurldService.getClientToken() != null) {
             intent.putExtra(KNURLD_TOKEN, knurldService.getClientToken());
-        }
-        if (knurldService.getAppModel() != null) {
-            intent.putExtra(KNURLD_APP_MODEL, knurldService.getAppModel().appModelId);
-        }
-        if (knurldService.getConsumerModel() != null) {
-            intent.putExtra(KNURLD_CONSUMER, knurldService.getConsumerModel().consumerModelId);
         }
         if (knurldService.getEnrollmentModel() != null) {
             intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().resourceId);
