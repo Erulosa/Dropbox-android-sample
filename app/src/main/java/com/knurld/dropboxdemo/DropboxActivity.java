@@ -31,10 +31,6 @@ import java.util.ArrayList;
 
 public class DropboxActivity extends Activity implements AsyncResponse {
 
-    final static private String APP_KEY = "d3zx13rhlc2jbpr";
-    final static private String APP_SECRET = "rfnin8j6dr3uhuv";
-
-
     private static final String ACCOUNT_PREFS_NAME = "prefs";
     private static final String ACCESS_KEY_NAME = "ACCESS_KEY";
     private static final String ACCESS_SECRET_NAME = "ACCESS_SECRET";
@@ -53,8 +49,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
     public KnurldService knurldService;
 
     private static final String KNURLD_TOKEN = "KNURLD_TOKEN";
-    private static final String KNURLD_APP_MODEL = "KNURLD_APP_MODEL";
-    private static final String KNURLD_CONSUMER = "KNURLD_CONSUMER";
     private static final String KNURLD_VERIFICATION = "KNURLD_VERIFICATION";
     private static final String KNURLD_ENROLLMENT = "KNURLD_ENROLLMENT";
 
@@ -79,15 +73,13 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         lockedFiles = new ArrayList<String>();
 
         final String knurldToken = intent.getStringExtra(KNURLD_TOKEN);
-        final String knurldApp = intent.getStringExtra(KNURLD_APP_MODEL);
-        final String knurldConsumer = intent.getStringExtra(KNURLD_CONSUMER);
         final String knurldEnrollment = intent.getStringExtra(KNURLD_ENROLLMENT);
 
 
         knurldServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                knurldService = new KnurldService(knurldToken, knurldApp, knurldConsumer, knurldEnrollment);
+                knurldService = new KnurldService(knurldToken, knurldEnrollment);
             }
         });
         knurldServiceThread.start();
@@ -127,7 +119,7 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
 
     private AndroidAuthSession buildSession() {
-        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
+        AppKeyPair appKeys = new AppKeyPair(Config.APP_KEY, Config.APP_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
 
         SharedPreferences preferences = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
@@ -145,19 +137,20 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     protected void onResume() {
         super.onResume();
+        // Get list of locked files
         lockedFiles = ((ArrayList<String>) LockedItems.getItems(this, "locked") == null) ? new ArrayList<String>() : (ArrayList<String>) LockedItems.getItems(this, "locked");
     }
 
     protected void onPause() {
         super.onPause();
-        for (DropboxAPI.Entry item : dropboxService.dropboxItem.entry.contents) {
-            if (item.readOnly && !lockedFiles.contains(item.fileName())) {
-                lockedFiles.add(item.fileName());
+        // Update list of locked files, removing any repeats
+        ArrayList<String> updatedLock = new ArrayList<String>();
+        for (String file : lockedFiles) {
+            if (!updatedLock.contains(file)) {
+                updatedLock.add(file);
             }
         }
-//        TODO reset saved locked files, need better way to clear files
-//        lockedFiles = new ArrayList<String>();
-        LockedItems.saveItems(this, "locked", lockedFiles);
+        LockedItems.saveItems(this, "locked", updatedLock);
     }
 
     public void toggleLockOn(final String item, String message, final Boolean locked, final String verificationId ,final String phrases) {
@@ -230,11 +223,11 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     public void setItem(boolean locked, String item) {
         if (locked) {
-            lockedFiles.remove(item);
+            lockedFiles.add(item);
             LockedItems.saveItems(this, "locked", lockedFiles);
             Toast.makeText(context, "Item is Locked", Toast.LENGTH_SHORT).show();
         } else {
-            lockedFiles.add(item);
+            lockedFiles.remove(item);
             LockedItems.saveItems(this, "locked", lockedFiles);
             Toast.makeText(context, "Item is Unlocked", Toast.LENGTH_SHORT).show();
         }
@@ -242,7 +235,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
 
     @Override
     public void processFinish(String method, String output) {
-
 
         if (output.equals("finished")) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
@@ -259,7 +251,6 @@ public class DropboxActivity extends Activity implements AsyncResponse {
             ListViewSwipeAdapter adapter = new ListViewSwipeAdapter(this, dropboxService.dropboxItem, knurldService);
             listView = (ListView)findViewById(R.id.list);
             listView.setAdapter(adapter);
-
 
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -301,14 +292,8 @@ public class DropboxActivity extends Activity implements AsyncResponse {
         if (knurldService.getClientToken() != null) {
             intent.putExtra(KNURLD_TOKEN, knurldService.getClientToken());
         }
-        if (knurldService.getAppModel() != null) {
-            intent.putExtra(KNURLD_APP_MODEL, knurldService.getAppModel().appModelId);
-        }
-        if (knurldService.getConsumerModel() != null) {
-            intent.putExtra(KNURLD_CONSUMER, knurldService.getConsumerModel().consumerModelId);
-        }
         if (knurldService.getEnrollmentModel() != null) {
-            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().enrollmentId);
+            intent.putExtra(KNURLD_VERIFICATION, knurldService.getEnrollmentModel().resourceId);
         }
         return intent;
     }

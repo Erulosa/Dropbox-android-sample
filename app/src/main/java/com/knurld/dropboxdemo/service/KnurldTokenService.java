@@ -2,6 +2,8 @@ package com.knurld.dropboxdemo.service;
 
 import android.util.Log;
 
+import com.knurld.dropboxdemo.Config;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -16,15 +18,12 @@ import java.net.URL;
  */
 public class KnurldTokenService {
 
-    private static final String CLIENT_ID = "EGVYDlI9Xgwhtd7GBvZsTjIPAmTjVxMR";
-    private static final String CLIENT_SECRET = "e7yCrwbBeOzdholu";
-
     public String getToken(){
         String CLIENT_TOKEN = "";
         StringBuilder sb = new StringBuilder();
         InputStream in = null;
         String urlString = "https://api.knurld.io/oauth/client_credential/accesstoken?grant_type=client_credentials";
-        String credentials = "client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET;
+        String credentials = "client_id=" + Config.CLIENT_ID + "&client_secret=" + Config.CLIENT_SECRET;
 
         try {
             URL url = new URL(urlString);

@@ -30,24 +30,14 @@ public class ConsumerModel extends KnurldModelService {
 
     @Override
     public void buildFromResponse(String response) {
-        JSONObject jsonParam = null;
-
         try {
-            jsonParam = new JSONObject(response);
+            JSONObject jsonParam = new JSONObject(response);
             JSONArray items = jsonParam.has("items") ? jsonParam.getJSONArray("items") : null;
-            if (items != null && items.length() > 0) {
-                JSONObject item = (JSONObject) items.get(1);
-                String h = item.has("href") ? item.getString("href") : null;
-                if (h != null) {
-                    setHref(h);
-                }
-            } else {
-                String h = jsonParam.has("href") ? jsonParam.getString("href") : null;
-                if (h != null) {
-                    setHref(h);
-                }
-            }
 
+            // Check if response has a list of items or is a singular item
+            JSONObject item = (items != null && items.length() > 0) ? (JSONObject)items.get(1) : jsonParam;
+
+            if (item.has("href")) { setHref(item.getString("href")); }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -65,21 +55,21 @@ public class ConsumerModel extends KnurldModelService {
 
     @Override
     public String index() {
-        return getRequest("consumers", null);
+        return request("GET", "consumers", null);
     }
 
     @Override
     public String show(String urlParam) {
-        return getRequest("consumers", urlParam);
+        return request("GET", "consumers", urlParam);
     }
 
     @Override
     public String create(String body) {
-        return postRequest("consumers", null, body);
+        return request("POST", "consumers", null, body);
     }
 
     @Override
     public String update(String... params) {
-        return postRequest("consumers", params[0], params[1]);
+        return request("POST", "consumers", params[0], params[1]);
     }
 }

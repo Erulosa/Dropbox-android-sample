@@ -42,7 +42,6 @@ public class KnurldActivity extends Activity {
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressSpinner);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.rgb(226, 132, 59), PorterDuff.Mode.MULTIPLY);
 
-        Intent intent = getIntent();
         context = this;
 
         knurldServiceThread = new Thread(new Runnable() {
@@ -55,14 +54,9 @@ public class KnurldActivity extends Activity {
                         showSetup();
                     }
                 });
-
             }
         });
         knurldServiceThread.start();
-
-
-
-
     }
 
     public void showSetup() {
@@ -73,7 +67,6 @@ public class KnurldActivity extends Activity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
     public PopupWindow showLoadingPopup(View view) {
@@ -193,7 +186,6 @@ public class KnurldActivity extends Activity {
                         }
                     }
                 });
-
             }
         }).start();
     }

@@ -1,5 +1,7 @@
 package com.knurld.dropboxdemo.service;
 
+import com.knurld.dropboxdemo.Config;
+import com.knurld.dropboxdemo.KnurldActivity;
 import com.knurld.dropboxdemo.model.AppModel;
 import com.knurld.dropboxdemo.model.ConsumerModel;
 import com.knurld.dropboxdemo.model.EnrollmentModel;
@@ -13,13 +15,11 @@ import org.json.JSONObject;
  * Created by andyshear on 2/15/16.
  */
 public class KnurldService {
-    // Knurld toke, Getter/Setter
+
+    // Knurld token, Getter/Setter
     private static String CLIENT_TOKEN = null;
     public String getClientToken() {
         return CLIENT_TOKEN;
-    }
-    public void setClientToken(String clientToken) {
-        CLIENT_TOKEN = clientToken;
     }
 
     // Models
@@ -51,15 +51,15 @@ public class KnurldService {
     public KnurldService() {
         CLIENT_TOKEN = requestToken();
         KnurldModelService.setClientToken(CLIENT_TOKEN);
-        setupExistingKnurldUser(null, null, null);
+        setupExistingKnurldUser(Config.APP_MODEL_ID, Config.CONSUMER_ID, null);
     }
 
     // Start knurld service by getting token, or
     // Start knurld service with existing token, pass in model Id's if they exist
-    public KnurldService(String token, String appModelId, String consumerModelId, String enrollmentModelId) {
+    public KnurldService(String token, String enrollmentModelId) {
         CLIENT_TOKEN = token == null ? requestToken() : token;
         KnurldModelService.setClientToken(CLIENT_TOKEN);
-        setupExistingKnurldUser(appModelId, consumerModelId, enrollmentModelId);
+        setupExistingKnurldUser(Config.APP_MODEL_ID, Config.CONSUMER_ID, enrollmentModelId);
     }
 
     // Start thread to request token
@@ -117,7 +117,7 @@ public class KnurldService {
 
         EnrollmentModel enrollmentModel = new EnrollmentModel();
         enrollmentModel.buildFromResponse(enrollmentModel.create(body.toString()));
-        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.resourceId));
         setEnrollmentModel(enrollmentModel);
     }
 
@@ -149,35 +149,16 @@ public class KnurldService {
         }
 
         // Update enrollment with valid intervals from analysis, then set enrollment
-        enrollmentModel.buildFromResponse(enrollmentModel.update(enrollmentModel.enrollmentId, analysisObj.toString()));
-        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
+        enrollmentModel.buildFromResponse(enrollmentModel.update(enrollmentModel.resourceId, analysisObj.toString()));
 
-        Thread enrollmentThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                // Poll for enrollment to finish every 0.5 seconds until complete
-                while (!enrollmentModel.enrolled && !enrollmentModel.failed) {
-                    try {
-                        Thread.sleep(500, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.enrollmentId));
-                }
-            }
-        });
-        enrollmentThread.start();
-
-        try {
-            enrollmentThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // Get updated verification, if it is still processing, poll until complete/failed
+        enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.resourceId));
+        while (!enrollmentModel.completed && !enrollmentModel.failed) {
+            enrollmentModel.buildFromResponse(enrollmentModel.show(enrollmentModel.resourceId));
         }
 
-
         setEnrollmentModel(enrollmentModel);
-        return enrollmentModel.enrolled;
+        return enrollmentModel.completed;
     }
 
     public String[] startVerification() {
@@ -194,8 +175,8 @@ public class KnurldService {
 
         VerificationModel verificationModel = new VerificationModel();
         verificationModel.buildFromResponse(verificationModel.create(body.toString()));
-        verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-        return new String[]{verificationModel.phrases, verificationModel.activeVerification, verificationModel.phrasesArray.toString()};
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.resourceId));
+        return new String[]{verificationModel.phrases, verificationModel.resourceId, verificationModel.phrasesArray.toString()};
     }
 
     // Set up and run a knurld verification
@@ -219,44 +200,26 @@ public class KnurldService {
         JSONArray intervals = runAnalysis(body);
 
         // Add phrases to analysis intervals
-        JSONArray vocabArray = null;
         try {
-            vocabArray = new JSONArray(vocab);
+            JSONArray vocabArray = new JSONArray(vocab);
+            JSONObject analysisObj = prepareAnalysisJSON(intervals, vocabArray, 1, vocabArray.length());
+
+            // Return false if there is a bad analysis, re-record enrollment and try again
+            if (analysisObj == null) {
+                return false;
+            }
+
+            // Update verification with valid intervals from analysis, then set verification
+            verificationModel.buildFromResponse(verificationModel.update(verificationId, analysisObj.toString()));
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject analysisObj = prepareAnalysisJSON(intervals, vocabArray, 1, vocabArray.length());
 
-        // Return false if there is a bad analysis, re-record enrollment and try again
-        if (analysisObj == null) {
-            return false;
-        }
-
-        // Update enrollment with valid intervals from analysis, then set enrollment
-        verificationModel.buildFromResponse(verificationModel.update(verificationId, analysisObj.toString()));
-        verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-
-        Thread verificationThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                // Poll for enrollment to finish every 0.5 seconds until complete
-                while (!verificationModel.verified && !verificationModel.failed && !verificationModel.completed) {
-                    try {
-                        Thread.sleep(500, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    verificationModel.buildFromResponse(verificationModel.show(verificationModel.activeVerification));
-                }
-            }
-        });
-        verificationThread.start();
-
-        try {
-            verificationThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // Get updated verification, if it is still processing, poll until complete/failed
+        verificationModel.buildFromResponse(verificationModel.show(verificationModel.resourceId));
+        while (!verificationModel.verified && !verificationModel.failed && !verificationModel.completed) {
+            verificationModel.buildFromResponse(verificationModel.show(verificationModel.resourceId));
         }
 
         return verificationModel.verified;
@@ -264,7 +227,7 @@ public class KnurldService {
 
     protected JSONArray runAnalysis(final JSONObject body) {
         // Perform analysis on enrollment.wav
-        final com.knurld.dropboxdemo.service.KnurldAnalysisService knurldAnalysisService = new com.knurld.dropboxdemo.service.KnurldAnalysisService(CLIENT_TOKEN);
+        final KnurldAnalysisService knurldAnalysisService = new KnurldAnalysisService(CLIENT_TOKEN);
 
         // Start analysis on enrollment.wav
         final String[] analysis = {null};
@@ -272,22 +235,17 @@ public class KnurldService {
         Thread analysisThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                analysis[0] = knurldAnalysisService.startAnalysis(body.toString());
-
-                // Poll for analysis to finish every 0.5 seconds until intervals are returned
-                while (intervals[0] == null) {
-                    try {
-                        Thread.sleep(500, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    String analysisId = "";
-                    try {
-                        analysisId = new JSONObject(analysis[0]).getString("taskName");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    analysis[0] = knurldAnalysisService.startAnalysis(body.toString());
+                    String analysisId = new JSONObject(analysis[0]).getString("taskName");
                     intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
+
+                    // Poll for analysis to finish
+                    while (intervals[0] == null) {
+                            intervals[0] = knurldAnalysisService.getAnalysis(analysisId);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -307,8 +265,8 @@ public class KnurldService {
         // Add phrases to intervals, accounting for enrollmentRepeats
         boolean validPhrases = true;
         JSONArray newPhrases = new JSONArray();
-        for (int i = 0; i< words * repeats; i++) {
-            try {
+        try {
+            for (int i = 0; i< words * repeats; i++) {
                 JSONObject j = phrases.getJSONObject(i);
                 int start = j.getInt("start");
                 int stop = j.getInt("stop");
@@ -317,11 +275,7 @@ public class KnurldService {
                 }
                 j.put("phrase", vocab.get(i%words));
                 newPhrases.put(j);
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-        }
-        try {
             body.put("intervals", newPhrases);
         } catch (JSONException e) {
             e.printStackTrace();
