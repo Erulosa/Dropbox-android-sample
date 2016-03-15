@@ -1,4 +1,4 @@
-# demo-dropbox
+# Dropbox-android-demo 
 Sample Android application demonstrating step-up authentication for accessing Dropbox files using [knurld.io APIs](https://developer.knurld.io)
 
 ## Prerequisites
