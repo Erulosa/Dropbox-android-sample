@@ -1,14 +1,18 @@
 # demo-dropbox
-Sample Android application using [knurd.io api](https://developer.knurld.io)
+Sample Android application demonstrating step-up authentication for accessing Dropbox files using [knurld.io APIs](https://developer.knurld.io)
 
 ## Prerequisites
-Signup to get your own [knurd.io api](https://developer.knurld.io) developer app.
+1. Signup to get your own developer credentials from http://developer.knurld.io/
+2. Make sure you have a Dropbox account
+
+##Knurld Getting Started Guide
+http://developer.knurld.io/getting-started-guide-0
 
 ## Bootstrap
 
 Before running the application, you will need to create an `Application Model` and a `Consumer` object manually in Knurld's API Service. We've provided some `curl` commands you can run from the command line to do this, or you can adapt the commands to a tool of your choice.
 
-In order to create these you will need your _OAuth_ Token and _Developer-Id_, this was issued to you upon registration. These are required for every request to Knurld's backend service.
+In order to create these you will need your _Developer-Id_ (this was issued to you in a email upon registration) and _OAuth_ Token. These are required for every request to Knurld's backend service.
 
 ### Get OAuth Token
 
@@ -94,10 +98,9 @@ You will want to edit `app/src/main/java/com/knurld/dropboxdemo/Config.java` to 
 
 #### DropBox
 
-If you do not already have an existing DropBox application, you will need to visit [DropBox](http://dropbox.com/developers) and creat an app. It is straight-forward and quick to complete; once you're finished you'll be left at your DropBox application's settings page. You will need the _App key_ and _App secret_ from that page.
+If you do not already have an existing DropBox application, you will need to visit [DropBox](http://dropbox.com/developers) and create an app. It is straight-forward and quick to complete; once you're finished you'll be left at your DropBox application's settings page. You will need the _App key_ and _App secret_ from that page.
 
 * `APP_KEY` - This is your DropBox API Key, found on your DropBox application's settings page as _App key_.
 * `APP_SECRET` - This is your DropBox API Secret, found on your DropBox application's settings page as _App secret_.
 
-# License
-BSD
+
